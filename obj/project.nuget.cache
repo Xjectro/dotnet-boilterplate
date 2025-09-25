@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "cuKs5SsRy9s=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\lenovo\\Documents\\GitHub\\healthy-practice\\HealthyPractice.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lenovo\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.6\\microsoft.aspnetcore.openapi.9.0.6.nupkg.sha512",
+    "C:\\Users\\lenovo\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
