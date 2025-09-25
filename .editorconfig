@@ -1,0 +1,8 @@
+root = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+csharp_new_line_before_open_brace = all
+csharp_space_after_keywords_in_control_flow = true
