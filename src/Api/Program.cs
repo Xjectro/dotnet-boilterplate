@@ -55,6 +55,14 @@ builder.Services.AddSingleton<IJwtService, JwtService>();
 
 var app = builder.Build();
 
+var urls = Environment.GetEnvironmentVariable("DOTNET_URLS");
+
+if (!string.IsNullOrEmpty(urls))
+{
+    app.Urls.Clear();
+    app.Urls.Add(urls);
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
