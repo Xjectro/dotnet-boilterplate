@@ -1,189 +1,116 @@
-# Project Root - .NET Web API
+## Healthy Practice - .NET 10 Web API
+A modern boilerplate for authentication and session management using ADO.NET and PostgreSQL.
 
-A clean architecture .NET 9.0 Web API project with JWT authentication, built with Entity Framework Core and PostgreSQL.
+### Features
+- JWT authentication
+- User registration & login
+- BCrypt password hashing
+- PostgreSQL database
+- ADO.NET data access
+- Clean architecture
+- Swagger API docs
 
-## 🏗️ Architecture
+### Quick Start
+1. **Clone & Enter Project**
+   ```bash
+   git clone <repo-url>
+   cd healthy-practice
+   ```
+2. **Configure Database**
+   Edit `Configurations/appsettings.yml`:
+   ```yaml
+   ConnectionStrings:
+     DefaultConnection: "Host=localhost;Port=5432;Database=your_db;Username=your_user;Password=your_password"
+   JwtSettings:
+     Secret: "your-secret-key"
+     Issuer: "YourApp"
+     Audience: "YourAppUsers"
+     ExpiresInMinutes: 60
+   ```
+3. **Create Table**
+   Run this SQL in your PostgreSQL database:
+   ```sql
+   CREATE TABLE members (
+     id SERIAL PRIMARY KEY,
+     username VARCHAR(30) NOT NULL,
+     email VARCHAR(255) NOT NULL,
+     password VARCHAR(255) NOT NULL
+   );
+   ```
+4. **Build & Run**
+   ```bash
+   dotnet build
+   dotnet run
+   ```
 
-This project follows Clean Architecture principles with the following layers:
+### API Endpoints
+- `POST /api/auth/register` — Register user
+- `POST /api/auth/login` — Login, returns JWT
+- `GET /api/session` — Get current user (JWT required)
 
-- **Domain**: Core business entities and domain logic
-- **Application**: Business logic, DTOs, and service interfaces
-- **Infrastructure**: Data access, repositories, and external services
-- **API**: Controllers, middleware, and API configuration
-
-## 🚀 Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **User Registration & Login**: Complete authentication flow
-- **BCrypt Password Hashing**: Secure password storage
-- **PostgreSQL Database**: Robust data persistence
-- **Entity Framework Core**: Code-first database approach
-- **Swagger Documentation**: Interactive API documentation
-- **Clean Architecture**: Maintainable and testable code structure
-
-## 🛠️ Technology Stack
-
-- **.NET 9.0**: Latest .NET framework
-- **ASP.NET Core Web API**: RESTful API framework
-- **Entity Framework Core 9.0**: ORM for data access
-- **PostgreSQL**: Primary database
-- **JWT**: JSON Web Tokens for authentication
-- **BCrypt.Net**: Password hashing library
-- **Swagger/OpenAPI**: API documentation
-
-## 📋 Prerequisites
-
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [PostgreSQL](https://www.postgresql.org/download/)
-- IDE (Visual Studio, VS Code, or Rider)
-
-## ⚙️ Setup & Installation
-
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd project-root
+### Project Structure
+```
+Source/
+├── Controllers/
+├── Middleware/
+├── DTOs/
+├── Models/
+├── Repositories/
+├── Services/
+├── Docs/
+├── Program.cs
+├── Api.csproj
 ```
 
-### 2. Database Configuration
-Update the connection string in `src/Api/appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=your_db;Username=your_user;Password=your_password"
-  }
-}
-```
+### Docs & SQL
+See `Docs/auth.md` and `Docs/session.md` for details and example SQL.
 
-### 3. JWT Configuration
-Configure JWT settings in `src/Api/appsettings.json`:
-```json
-{
-  "JwtSettings": {
-    "Secret": "your-secret-key-at-least-32-characters-long",
-    "Issuer": "YourApp",
-    "Audience": "YourAppUsers",
-    "ExpiresInMinutes": 60
-  }
-}
-```
-
-### 4. Database Migration
-Run the following commands to set up the database:
-```bash
-# Apply migrations
-make update
-
-# Or manually:
-dotnet ef database update --project src/Infrastructure --startup-project src/Api
-```
-
-### 5. Build and Run
-```bash
-# Build the project
-make build
+### License
+Custom educational license. See LICENCE file.
+dotnet build
 
 # Run the application
-make run
-
-# Or manually:
-dotnet run --project src/Api
+dotnet run
 ```
 
+
 The API will be available at:
-- HTTP: `http://localhost:5143`
-- HTTPS: `https://localhost:7284` (if configured)
+- HTTP: `http://localhost:5143` (or your configured port)
+
 
 ## 📚 API Endpoints
 
-### Authentication
+See `Docs/auth.md` and `Docs/session.md` for details, example requests, and SQL setup.
 
-#### Register User
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePassword123"
-}
-```
-
-#### Login User
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "email": "john@example.com",
-  "password": "SecurePassword123"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-### Session Management
-
-#### Get Current User
-```http
-GET /api/session
-Authorization: Bearer <your-jwt-token>
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com"
-}
-```
 
 ## 🔧 Development Commands
 
-The project includes a Makefile for common development tasks:
-
+Common .NET CLI commands:
 ```bash
-# Create a new migration
-make migrate-MigrationName
-
-# Update database
-make update
-
 # Build project
-make build
+dotnet build
 
 # Run project
-make run
+dotnet run
 ```
+
 
 ## 🗂️ Project Structure
 
 ```
-├── src/
-│   ├── Api/                    # Web API layer
-│   │   ├── Controllers/        # API controllers
-│   │   ├── Middleware/         # Custom middleware
-│   │   └── Attributes/         # Custom attributes
-│   ├── Application/            # Application layer
-│   │   ├── DTOs/              # Data Transfer Objects
-│   │   ├── Interfaces/        # Service contracts
-│   │   └── Services/          # Business logic services
-│   ├── Domain/                # Domain layer
-│   │   └── Entities/          # Domain entities
-│   └── Infrastructure/        # Infrastructure layer
-│       ├── Data/              # Database context & migrations
-│       └── Repositories/      # Data access implementations
-├── Makefile                   # Development commands
-└── project-root.sln          # Solution file
+├── Source/
+│   ├── Controllers/        # API controllers
+│   ├── Middleware/         # Custom middleware
+│   ├── Attributes/         # Custom attributes
+│   ├── DTOs/               # Data Transfer Objects
+│   ├── Models/             # Entity models
+│   ├── Repositories/       # Data access (ADO.NET)
+│   └── Services/           # Business logic services
+├── Configurations/         # YAML configuration files
+├── Docs/                   # Documentation (auth, session, SQL)
+├── Program.cs              # Main entry point
+├── Api.csproj              # Project file
+└── README.md               # This file
 ```
 
 ## 🔒 Security Features
@@ -203,17 +130,9 @@ make run
 ### Using HTTP Files
 The project includes `src/Api/Api.http` file for testing with REST clients.
 
-## 📝 Database Schema
 
-### Members Table
-```sql
-CREATE TABLE members (
-    Id SERIAL PRIMARY KEY,
-    username VARCHAR(30) NOT NULL,
-    email TEXT NOT NULL,
-    password TEXT NOT NULL
-);
-```
+## 📝 Database Schema
+See `Docs/auth.md` for the latest SQL schema for the members table.
 
 ## 🤝 Contributing
 

@@ -1,0 +1,12 @@
+Logging:
+  LogLevel:
+    Default: Information
+    Microsoft.AspNetCore: Warning
+ConnectionStrings:
+  DefaultConnection: "Host=postgres;Port=5432;Database=test;Username=postgres;Password=a19b225eb281d6c5e09d0d329aa67fd1"
+JwtSettings:
+  Secret: "48410ed141fddb6bbcf130f024afe202"
+  Issuer: "YourApp"
+  Audience: "YourAppUsers"
+  ExpiresInMinutes: 60
+AllowedHosts: "*"

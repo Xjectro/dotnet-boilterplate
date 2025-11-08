@@ -6,7 +6,7 @@ services:
     container_name: postgres-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: my-password
+      POSTGRES_PASSWORD: a19b225eb281d6c5e09d0d329aa67fd1
       POSTGRES_DB: test
     ports:
       - "5432:5432"
@@ -21,8 +21,8 @@ services:
     ports:
       - "5143:5143"
     environment:
-      DOTNET_ENVIRONMENT: "Docker"
-      DOTNET_RUNNING_PROFILE: "docker"
+      DOTNET_ENVIRONMENT: "Production"
+      DOTNET_RUNNING_PROFILE: "production"
       DOTNET_URLS: "http://+:5143"
     depends_on:
       - postgres

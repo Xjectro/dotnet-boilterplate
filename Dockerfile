@@ -4,7 +4,7 @@ WORKDIR /App
 COPY . ./
 RUN dotnet restore
 
-RUN dotnet publish src/Api/Api.csproj -c Release -o out -p:EnvironmentName=Docker
+RUN dotnet publish src/Api/Api.csproj -c Release -o out -p:EnvironmentName=Production
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /App
