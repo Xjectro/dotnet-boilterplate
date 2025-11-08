@@ -1,4 +1,4 @@
-## Healthy Practice - .NET 10 Web API
+## Dotnet Boilerplate - .NET 10 Web API
 A modern boilerplate for authentication and session management using ADO.NET and PostgreSQL.
 
 ### Features
