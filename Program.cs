@@ -7,30 +7,17 @@ using System.IO;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-Dictionary<string, object> LoadYamlConfig(string environment)
-{
-    var yamlFile = environment == "Production"
-        ? "Configurations/appsettings.Production.yml"
-        : "Configurations/appsettings.yml";
-    var yamlText = File.ReadAllText(yamlFile);
-    var deserializer = new DeserializerBuilder()
-        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-        .Build();
-    return deserializer.Deserialize<Dictionary<string, object>>(yamlText);
-}
-
-var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
-var yamlConfig = LoadYamlConfig(env);
-
 var configBuilder = new ConfigurationBuilder();
-configBuilder.AddInMemoryCollection(
-    yamlConfig.Select(kvp => new KeyValuePair<string, string?>(kvp.Key, kvp.Value?.ToString()))
-);
 var configuration = configBuilder.Build();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddConfiguration(configuration);
 
+builder.Configuration
+    .AddYamlFile("Configurations/appsettings.yml")
+    .AddYamlFile($"Configurations/appsettings.{builder.Environment.EnvironmentName}.yml", optional: true);
+
+var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -42,6 +29,34 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddScoped<IMemberRepository>(provider => new MemberRepository(connectionString));
 builder.Services.AddScoped<IBCryptService, BCryptService>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "JWT token giriniz: Bearer {token}"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 

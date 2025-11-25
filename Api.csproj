@@ -9,10 +9,12 @@
   <ItemGroup>
   <PackageReference Include="Dapper" Version="2.1.66" />
   <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  <PackageReference Include="Microsoft.Extensions.Configuration.Yaml" Version="2.0.0-preview2" />
   <PackageReference Include="Redoc.AspNetCore" Version="1.0.0" />
   <PackageReference Include="Scalar.AspNetCore" Version="2.0.0" />
   <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
   <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+  <PackageReference Include="YamlConfiguration" Version="1.0.1" />
   <PackageReference Include="YamlDotNet" Version="13.2.1" />
   <PackageReference Include="Npgsql" Version="7.0.5" />
   </ItemGroup>

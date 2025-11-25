@@ -35,7 +35,7 @@ build:
 	dotnet build $(PROJECT_FILE)
 
 run:
-	dotnet run --project $(PROJECT_FILE)
+	dotnet run
 
 # --------------------------------------------------
 # EF Core Migrations
