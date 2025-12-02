@@ -46,7 +46,7 @@ public class MemberRepository : IMemberRepository
         );
     }
 
-    public async Task<Member?> GetByIdAsync(int id)
+    public async Task<Member?> GetByIdAsync(Guid id)
     {
         return await _dbHelper.GetSingleAsync(
             "SELECT id, username, email, password FROM members WHERE id = @id LIMIT 1",
