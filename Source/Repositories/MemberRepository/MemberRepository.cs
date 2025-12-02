@@ -41,7 +41,7 @@ public class MemberRepository : IMemberRepository
                 reader.GetString(reader.GetOrdinal("email")),
                 reader.GetString(reader.GetOrdinal("password"))
             )
-            { Id = reader.GetInt32(reader.GetOrdinal("id")) },
+            { Id = reader.GetGuid(reader.GetOrdinal("id")) },
             new NpgsqlParameter("@username", username)
         );
     }
@@ -55,7 +55,7 @@ public class MemberRepository : IMemberRepository
                 reader.GetString(reader.GetOrdinal("email")),
                 reader.GetString(reader.GetOrdinal("password"))
             )
-            { Id = reader.GetInt32(reader.GetOrdinal("id")) },
+            { Id = reader.GetGuid(reader.GetOrdinal("id")) },
             new NpgsqlParameter("@id", id)
         );
     }
@@ -69,7 +69,7 @@ public class MemberRepository : IMemberRepository
                 reader.GetString(reader.GetOrdinal("email")),
                 reader.GetString(reader.GetOrdinal("password"))
             )
-            { Id = reader.GetInt32(reader.GetOrdinal("id")) },
+            { Id = reader.GetGuid(reader.GetOrdinal("id")) },
             new NpgsqlParameter("@email", email)
         );
     }
