@@ -6,7 +6,7 @@ using Source.Attributes;
 namespace Source.Controllers;
 
 [ApiController]
-[Route("api/session")]
+[Route("session")]
 public class SessionController : ControllerBase
 {
     [HttpGet]

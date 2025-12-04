@@ -4,8 +4,8 @@
 ## User Table
 
 ```sql
-CREATE TABLE members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+CREATE TABLE IF NOT EXISTS members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(30) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL
@@ -13,11 +13,11 @@ CREATE TABLE members (
 ```
 
 ## Registration
-- Users register by sending a POST request to the `/api/auth/register` endpoint.
+- Users register by sending a POST request to the `/auth/register` endpoint.
 - Required fields: username, email, password
 
 ## Login
-- Users log in by sending a POST request to the `/api/auth/login` endpoint.
+- Users log in by sending a POST request to the `/auth/login` endpoint.
 - Returns a JWT token.
 
 ## JWT Token

@@ -6,7 +6,7 @@
 - Once the token is validated, the user's information is stored in `HttpContext.Items["Member"]`.
 
 ## Session Endpoints
-- In endpoints like `/api/session`, user information is validated using JWT.
+- In endpoints like `/session`, user information is validated using JWT.
 
 ## SQL Code
 Sessions are managed via the `members` table. There is no separate session table.

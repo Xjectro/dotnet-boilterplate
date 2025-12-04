@@ -44,9 +44,9 @@ A modern boilerplate for authentication and session management using ADO.NET and
    ```
 
 ### API Endpoints
-- `POST /api/auth/register` — Register user
-- `POST /api/auth/login` — Login, returns JWT
-- `GET /api/session` — Get current user (JWT required)
+- `POST /auth/register` — Register user
+- `POST /auth/login` — Login, returns JWT
+- `GET /session` — Get current user (JWT required)
 
 ### Project Structure
 ```
