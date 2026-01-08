@@ -1,0 +1,20 @@
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: my-dotnet-container
+    ports:
+      - "5143:5143"
+    environment:
+      DOTNET_ENVIRONMENT: "Development"
+      DOTNET_RUNNING_PROFILE: "development"
+    depends_on:
+      redis:
+        condition: service_started

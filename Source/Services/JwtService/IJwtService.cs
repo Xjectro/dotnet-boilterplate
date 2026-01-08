@@ -1,11 +1,10 @@
 using System.Security.Claims;
 
-namespace Source.Services
-{
-    public interface IJwtService
-    {
-        string GenerateToken(Dictionary<string, string> claims, int? expireMinutes = null);
+namespace Source.Services.JwtService;
 
-        ClaimsPrincipal? ValidateToken(string token);
-    }
+public interface IJwtService
+{
+    string GenerateToken(Dictionary<string, string> claims, int? expireMinutes = null);
+
+    ClaimsPrincipal? ValidateToken(string token);
 }

@@ -1,12 +1,16 @@
-## Dotnet Boilerplate - .NET 10 Web API
-A modern boilerplate for authentication and session management using ADO.NET and PostgreSQL.
+
+## Dotnet Boilerplate - .NET 10 Web API (ScyllaDB, Kafka, Redis, Kestrel)
+A modern, high-performance boilerplate for authentication, session management, and distributed data using ScyllaDB, Kafka, Redis, and Kestrel. Saniyede 1 milyon istek hedefiyle optimize edilmiştir.
+
 
 ### Features
 - JWT authentication
 - User registration & login
 - BCrypt password hashing
-- PostgreSQL database
-- ADO.NET data access
+- ScyllaDB (Cassandra uyumlu, yüksek performanslı NoSQL)
+- Kafka (yüksek hacimli mesajlaşma)
+- Redis (cache ve hızlı veri erişimi)
+- Kestrel (yüksek performanslı .NET web sunucusu)
 - Clean architecture
 - Swagger API docs
 
@@ -16,32 +20,71 @@ A modern boilerplate for authentication and session management using ADO.NET and
    git clone <repo-url>
    cd healthy-practice
    ```
-2. **Configure Database**
-   Edit `Configurations/appsettings.yml`:
+
+2. **Start All Services (Docker Compose)**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+
+3. **Config & Environment**
+   `Configurations/appsettings.yml` dosyasında örnek ayarlar:
    ```yaml
-   ConnectionStrings:
-     DefaultConnection: "Host=localhost;Port=5432;Database=your_db;Username=your_user;Password=your_password"
-   JwtSettings:
-     Secret: "your-secret-key"
-     Issuer: "YourApp"
-     Audience: "YourAppUsers"
-     ExpiresInMinutes: 60
+   ScyllaDb:
+     Host: "scylla"
+   Kafka:
+     Host: "kafka:9092"
+   Redis:
+     Host: "redis:6379"
    ```
-3. **Create Table**
-   Run this SQL in your PostgreSQL database:
-   ```sql
-   CREATE TABLE members (
-     id SERIAL PRIMARY KEY,
-     username VARCHAR(30) NOT NULL,
-     email VARCHAR(255) NOT NULL,
-     password VARCHAR(255) NOT NULL
-   );
-   ```
-4. **Build & Run**
+
+4. **Build & Run (Manual)**
    ```bash
    dotnet build
    dotnet run
    ```
+
+### ScyllaDB ile CRUD ve Kafka ile Sıralama
+
+#### MemberRepository (ScyllaDB)
+```csharp
+var session = await scyllaService.GetSessionAsync();
+var repo = new MemberRepository(session);
+await repo.AddAsync(new Member("user", "mail", "pass"));
+```
+
+#### Kafka ile istekleri sıraya sokmak
+```csharp
+await kafkaQueueService.PublishMemberRequestAsync(member);
+var consumed = await kafkaQueueService.ConsumeMemberRequestAsync();
+if (consumed != null)
+    await repo.AddAsync(consumed);
+```
+
+### Örnek Kullanım (C#)
+
+#### ScyllaDB
+```csharp
+var session = await scyllaService.GetSessionAsync();
+// CQL sorguları ile veri işle
+```
+
+#### Kafka
+```csharp
+await kafkaService.ProduceAsync("topic", "mesaj");
+var msg = await kafkaService.ConsumeAsync("topic", "group1");
+```
+
+#### Redis
+```csharp
+await redisService.SetAsync("key", "value");
+var value = await redisService.GetAsync("key");
+```
+
+### Performans
+- Kestrel limits ayarları ile 1 milyon eşzamanlı bağlantı desteklenir.
+- Docker Compose ile tüm servisler izole ve yüksek performanslı çalışır.
+
 
 ### API Endpoints
 - `POST /auth/register` — Register user
@@ -62,17 +105,20 @@ Source/
 ├── Api.csproj
 ```
 
+
 ### Docs & SQL
 See `Docs/auth.md` and `Docs/session.md` for details and example SQL.
 
+### Distributed Services
+- ScyllaDB: Yüksek performanslı NoSQL veri saklama
+- Kafka: Dağıtık mesaj kuyruğu
+- Redis: Hızlı cache ve key-value store
+
+dotnet build
+dotnet run
+
 ### License
 Custom educational license. See LICENCE file.
-dotnet build
-
-# Run the application
-dotnet run
-```
-
 
 The API will be available at:
 - HTTP: `http://localhost:5143` (or your configured port)

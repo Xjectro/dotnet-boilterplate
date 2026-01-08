@@ -3,71 +3,61 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Source.Configurations;
 
-namespace Source.Services
+namespace Source.Services.JwtService;
+
+public class JwtService : IJwtService
 {
-    public class JwtSettings
+    private readonly JwtSettings _settings;
+    private readonly JwtSecurityTokenHandler _tokenHandler = new();
+
+    public JwtService(IOptions<JwtSettings> options)
     {
-        public string Secret { get; set; } = string.Empty;
-        public int ExpiryMinutes { get; set; } = 60;
-        public string Issuer { get; set; } = string.Empty;
-        public string Audience { get; set; } = string.Empty;
+        _settings = options.Value;
     }
 
-    public class JwtService : IJwtService
+    public string GenerateToken(Dictionary<string, string> payload, int? expireMinutes = null)
     {
-        private readonly JwtSettings _settings;
+        byte[] key = Encoding.ASCII.GetBytes(_settings.Secret);
+        DateTime expires = DateTime.UtcNow.AddMinutes(expireMinutes ?? _settings.ExpiryMinutes);
 
-        public JwtService(IOptions<JwtSettings> options)
+        var claims = payload.Select(kvp => new Claim(kvp.Key, kvp.Value)).ToList();
+
+        SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
         {
-            _settings = options.Value;
+            Subject = new ClaimsIdentity(claims),
+            Expires = expires,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+            // Issuer = _settings.Issuer,
+            // Audience = _settings.Audience
+        };
+
+        SecurityToken token = _tokenHandler.CreateToken(tokenDescriptor);
+        return _tokenHandler.WriteToken(token);
+    }
+
+    public ClaimsPrincipal? ValidateToken(string token)
+    {
+        byte[] key = Encoding.ASCII.GetBytes(_settings.Secret);
+
+        TokenValidationParameters validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        try
+        {
+            ClaimsPrincipal principal = _tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            return principal;
         }
-
-        public string GenerateToken(Dictionary<string, string> claims, int? expireMinutes = null)
+        catch
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_settings.Secret);
-
-            var claimsIdentity = claims.Select(c => new Claim(c.Key, c.Value)).ToArray();
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claimsIdentity),
-                Expires = DateTime.UtcNow.AddMinutes(expireMinutes ?? _settings.ExpiryMinutes),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
-                Issuer = _settings.Issuer,
-                Audience = _settings.Audience
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
-
-        public ClaimsPrincipal? ValidateToken(string token)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_settings.Secret);
-
-            try
-            {
-                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = !string.IsNullOrEmpty(_settings.Issuer),
-                    ValidIssuer = _settings.Issuer,
-                    ValidateAudience = !string.IsNullOrEmpty(_settings.Audience),
-                    ValidAudience = _settings.Audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
-                return principal;
-            }
-            catch
-            {
-                return null;
-            }
+            return null;
         }
     }
 }

@@ -1,6 +1,4 @@
-using Source.Models;
-
-namespace Source.Services;
+namespace Source.Services.BCryptService;
 
 public interface IBCryptService
 {
