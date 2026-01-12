@@ -1,20 +1,62 @@
 services:
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_CLUSTER_NAME: "local-cluster"
+      CASSANDRA_DC: "istanbul"
+      CASSANDRA_RACK: "rack1"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   redis:
     image: redis:7.2
     container_name: redis
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   api:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: my-dotnet-container
+    container_name: api
     ports:
       - "5143:5143"
     environment:
-      DOTNET_ENVIRONMENT: "Development"
-      DOTNET_RUNNING_PROFILE: "development"
+      DOTNET_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:5143"
+      REDIS__HOST: "redis"
+      REDIS__PORT: "6379"
+      REDIS__CONNECTIONSTRING: "redis:6379"
+      CASSANDRA__CONTACT_POINTS: "cassandra"
+      CASSANDRA__PORT: "9042"
+      CASSANDRA__DATACENTER: "istanbul"
+      CASSANDRA__KEYSPACE: "default_keyspace"
+      CASSANDRA__CONSISTENCY: "LocalQuorum"
     depends_on:
       redis:
-        condition: service_started
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5143/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  cassandra_data:
+  redis_data:
