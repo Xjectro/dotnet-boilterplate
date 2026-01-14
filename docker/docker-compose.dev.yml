@@ -32,20 +32,22 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    container_name: api
+    container_name: api-dev
     ports:
       - "5143:5143"
     environment:
       DOTNET_ENVIRONMENT: Development
-      ASPNETCORE_URLS: "http://+:5143"
-      REDIS__HOST: "redis"
-      REDIS__PORT: "6379"
-      REDIS__CONNECTIONSTRING: "redis:6379"
+      JWT_SETTINGS__SECRET: "a19b225eb281d6c5e09d0d329aa67fd1"
+      JWT_SETTINGS__EXPIRY_MINUTES: "60"
+      REDIS__HOST: "redis:6379"
+      ALLOWED__HOSTS: "*"
       CASSANDRA__CONTACT_POINTS: "cassandra"
       CASSANDRA__PORT: "9042"
       CASSANDRA__DATACENTER: "istanbul"
       CASSANDRA__KEYSPACE: "default_keyspace"
       CASSANDRA__CONSISTENCY: "LocalQuorum"
+      CASSANDRA__REPLICATION_CLASS: "SimpleStrategy"
+      CASSANDRA__REPLICATION_FACTOR: "1"
     depends_on:
       redis:
         condition: service_healthy

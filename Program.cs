@@ -10,16 +10,14 @@ builder.ConfigureKestrelLimits();
 
 builder.Configuration.AddConfiguration(configuration);
 
-builder.Configuration
-    .AddJsonFile($"Configurations/appsettings.Development.json", optional: true, reloadOnChange: true)
-    .AddJsonFile($"Configurations/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddProjectServices(builder.Configuration);
 
 var app = builder.Build();
+
+await app.InitializeCassandraAsync();
 
 app.UseSwaggerDocumentation();
 app.UseRouting();

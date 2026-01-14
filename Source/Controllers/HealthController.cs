@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Source.Controllers;
 
 [ApiController]
-[Route("turtle")]
-public class TurtleController : ControllerBase
+[Route("health")]
+public class HealthController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get()
     {
 
-        return Ok(new { success = true, });
+        return Ok(new { success = true, message = "Ok" });
     }
 }

@@ -2,6 +2,6 @@ namespace Source.Configurations;
 
 public class JwtSettings
 {
-    public string Secret { get; set; } = string.Empty;
-    public int ExpiryMinutes { get; set; } = 60;
+    public string SECRET { get; set; } = string.Empty;
+    public int EXPIRY_MINUTES { get; set; } = 60;
 }
