@@ -20,6 +20,10 @@ public static class ServiceExtensions
         services.Configure<Source.Configurations.CassandraSettings>(configuration.GetSection("Cassandra"));
         services.AddSingleton<Source.Services.CassandraService.ICassandraService, Source.Services.CassandraService.CassandraService>();
 
+        // RabbitMQ Service
+        services.Configure<Source.Configurations.RabbitMqSettings>(configuration.GetSection("RabbitMq"));
+        services.AddSingleton<Source.Services.RabbitMqService.IRabbitMqService, Source.Services.RabbitMqService.RabbitMqService>();
+
         // Repositories
         services.AddScoped<Source.Repositories.ClientRepository.IClientRepository, Source.Repositories.ClientRepository.ClientRepository>();
 

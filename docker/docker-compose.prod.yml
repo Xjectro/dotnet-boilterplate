@@ -28,6 +28,23 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   api:
     build:
       context: ..
@@ -48,10 +65,17 @@ services:
       CASSANDRA__CONSISTENCY: "LocalQuorum"
       CASSANDRA__REPLICATION_CLASS: "NetworkTopologyStrategy"
       CASSANDRA__REPLICATION_FACTOR: "3"
+      RABBITMQ__HOST: "rabbitmq"
+      RABBITMQ__PORT: "5672"
+      RABBITMQ__USERNAME: "admin"
+      RABBITMQ__PASSWORD: "admin123"
+      RABBITMQ__VIRTUAL_HOST: "/"
     depends_on:
       redis:
         condition: service_healthy
       cassandra:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5143/health || exit 1"]
@@ -61,3 +85,5 @@ services:
 
 volumes:
   cassandra_data:
+  redis_data:
+  rabbitmq_data:
