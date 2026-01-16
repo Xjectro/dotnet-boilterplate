@@ -21,6 +21,7 @@ await app.InitializeCassandraAsync();
 
 app.UseSwaggerDocumentation();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.MapControllers();
 

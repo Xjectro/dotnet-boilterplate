@@ -19,8 +19,8 @@ public class JwtService : IJwtService
 
     public string GenerateToken(Dictionary<string, string> payload, int? expireMinutes = null)
     {
-        byte[] key = Encoding.ASCII.GetBytes(_settings.SECRET);
-        DateTime expires = DateTime.UtcNow.AddMinutes(expireMinutes ?? _settings.EXPIRY_MINUTES);
+        byte[] key = Encoding.ASCII.GetBytes(_settings.Secret);
+        DateTime expires = DateTime.UtcNow.AddMinutes(expireMinutes ?? _settings.ExpiryMinutes);
 
         var claims = payload.Select(kvp => new Claim(kvp.Key, kvp.Value)).ToList();
 
@@ -39,7 +39,7 @@ public class JwtService : IJwtService
 
     public ClaimsPrincipal? ValidateToken(string token)
     {
-        byte[] key = Encoding.ASCII.GetBytes(_settings.SECRET);
+        byte[] key = Encoding.ASCII.GetBytes(_settings.Secret);
 
         TokenValidationParameters validationParameters = new TokenValidationParameters
         {

@@ -16,8 +16,8 @@ public class CassandraService : ICassandraService
         _settings = options.Value;
 
         _cluster = Cassandra.Cluster.Builder()
-            .AddContactPoints(_settings.CONTACT_POINTS.Split(','))
-            .WithPort(_settings.PORT)
+            .AddContactPoints(_settings.ContactPoints.Split(','))
+            .WithPort(_settings.Port)
             .Build();
 
         _session = _cluster.Connect();
@@ -25,16 +25,16 @@ public class CassandraService : ICassandraService
 
     public async Task InitializeKeyspaceAsync()
     {
-        string replicationStrategy = _settings.REPLICATION_CLASS == "NetworkTopologyStrategy"
-            ? $"'class': 'NetworkTopologyStrategy', '{_settings.DATACENTER}': {_settings.REPLICATION_FACTOR}"
-            : $"'class': 'SimpleStrategy', 'replication_factor': {_settings.REPLICATION_FACTOR}";
+        string replicationStrategy = _settings.ReplicationClass == "NetworkTopologyStrategy"
+            ? $"'class': 'NetworkTopologyStrategy', '{_settings.Datacenter}': {_settings.ReplicationFactor}"
+            : $"'class': 'SimpleStrategy', 'replication_factor': {_settings.ReplicationFactor}";
 
         string createKeyspaceCql = $@"
-            CREATE KEYSPACE IF NOT EXISTS {_settings.KEYSPACE}
+            CREATE KEYSPACE IF NOT EXISTS {_settings.Keyspace}
             WITH REPLICATION = {{ {replicationStrategy} }};";
 
         await _session.ExecuteAsync(new Cassandra.SimpleStatement(createKeyspaceCql));
-        _session.ChangeKeyspace(_settings.KEYSPACE);
+        _session.ChangeKeyspace(_settings.Keyspace);
 
         // Automatically create all tables
         await InitializeTablesAsync();

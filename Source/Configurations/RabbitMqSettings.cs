@@ -2,9 +2,9 @@ namespace Source.Configurations;
 
 public class RabbitMqSettings
 {
-    public required string HOST { get; set; }
-    public required int PORT { get; set; }
-    public required string USERNAME { get; set; }
-    public required string PASSWORD { get; set; }
-    public required string VIRTUAL_HOST { get; set; }
+    public required string Host { get; set; }
+    public required int Port { get; set; }
+    public required string Username { get; set; }
+    public required string Password { get; set; }
+    public required string VirtualHost { get; set; }
 }

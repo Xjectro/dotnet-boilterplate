@@ -1,4 +1,0 @@
-# Configration
-
-```sql
-```

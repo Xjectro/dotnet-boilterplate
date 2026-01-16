@@ -11,7 +11,7 @@ public class RedisService : IRedisService
     public RedisService(Microsoft.Extensions.Options.IOptions<RedisSettings> options)
     {
         _settings = options.Value;
-        _lazyConnection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(_settings.HOST));
+        _lazyConnection = new Lazy<ConnectionMultiplexer>(() => ConnectionMultiplexer.Connect(_settings.Host));
     }
 
     private ConnectionMultiplexer Connection => _lazyConnection.Value;

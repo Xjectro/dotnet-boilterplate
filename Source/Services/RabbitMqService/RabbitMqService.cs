@@ -26,11 +26,11 @@ public class RabbitMqService : IRabbitMqService, IDisposable
                 {
                     var factory = new ConnectionFactory
                     {
-                        HostName = _settings.HOST,
-                        Port = _settings.PORT,
-                        UserName = _settings.USERNAME,
-                        Password = _settings.PASSWORD,
-                        VirtualHost = _settings.VIRTUAL_HOST,
+                        HostName = _settings.Host,
+                        Port = _settings.Port,
+                        UserName = _settings.Username,
+                        Password = _settings.Password,
+                        VirtualHost = _settings.VirtualHost,
                         AutomaticRecoveryEnabled = true,
                         NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
                     };
