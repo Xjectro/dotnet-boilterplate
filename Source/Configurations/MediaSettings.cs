@@ -1,6 +1,6 @@
 namespace Source.Configurations;
 
-public class CdnSettings
+public class MediaSettings
 {
     public string Endpoint { get; set; } = "http://localhost:9000";
     public string AccessKey { get; set; } = "minioadmin";

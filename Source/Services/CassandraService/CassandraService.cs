@@ -46,6 +46,7 @@ public class CassandraService : ICassandraService
         var tables = new List<Action>
         {
             () => GetTable<ClientModel>().CreateIfNotExists(),
+            () => GetTable<MediaModel>().CreateIfNotExists(),
             // New models will be added here
             // () => GetTable<YourNewModel>().CreateIfNotExists(),
         };

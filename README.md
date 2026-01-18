@@ -11,6 +11,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
 - ✅ **JWT Authentication** for secure API access
 - ✅ **Rate Limiting** with multiple strategies (Fixed Window, Token Bucket, Sliding Window)
 - ✅ **Mail Service** with queue-based async sending
+- ✅ **Media Service** with MinIO object storage and ImageSharp optimization
 - ✅ **Worker Service** for background job processing
 - ✅ **Docker** containerization with Docker Compose
 - ✅ **Health Checks** for all services
@@ -30,17 +31,17 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
 │   Client    │────▶│   API    │────▶│ Cassandra │
 └─────────────┘     └────┬─────┘     └───────────┘
                          │
-                    ┌────┴─────┐
-                    │          │
-              ┌─────▼────┐ ┌──▼──────┐
-              │  Redis   │ │RabbitMQ │
-              │  Cache   │ │  Queue  │
-              └──────────┘ └────┬────┘
-                                │
-                          ┌─────▼──────┐
-                          │   Worker   │
-                          │  Service   │
-                          └────────────┘
+                    ┌────┴──────┐
+                    │           │
+              ┌─────▼────┐ ┌───▼──────┐
+              │  Redis   │ │ RabbitMQ │
+              │  Cache   │ │  Queue   │
+              └──────────┘ └────┬─────┘
+                    │            │
+              ┌─────▼────┐ ┌────▼──────┐
+              │  MinIO   │ │  Worker   │
+              │   Media    │ │  Service  │
+              └──────────┘ └───────────┘
 ```
 
 ## 🚀 Quick Start
@@ -58,6 +59,7 @@ make dev
 # Access the application
 # API: http://localhost:5143
 # Swagger: http://localhost:5143/swagger
+# MinIO Console: http://localhost:9001 (minioadmin/minioadmin123)
 # RabbitMQ Management: http://localhost:15672 (admin/admin123)
 ```
 
@@ -82,6 +84,7 @@ Comprehensive documentation is available in the [Documentation](Documentation/) 
 - **[Cassandra Database](Documentation/cassandra.md)** - Database setup and usage
 - **[RabbitMQ Queue](Documentation/rabbitmq.md)** - Message queue implementation
 - **[Mail Service](Documentation/mail-service.md)** - Email service with async processing
+- **[Media Service](Documentation/media.md)** - File upload, storage and delivery with MinIO
 - **[Redis Cache](Documentation/redis.md)** - Caching strategies and usage
 - **[JWT Authentication](Documentation/jwt.md)** - Security and authentication
 - **[Rate Limiting](Documentation/rate-limiting.md)** - API throttling and DDoS protection
@@ -112,6 +115,14 @@ RabbitMq__Port=5672
 RabbitMq__Username=admin
 RabbitMq__Password=admin123
 
+# Media (MinIO)
+Media__Endpoint=http://minio:9000
+Media__AccessKey=minioadmin
+Media__SecretKey=minioadmin123
+Media__BucketName=uploads
+Media__PublicUrl=http://localhost:9000
+Media__MaxFileSize=10485760
+
 # Mail
 Mail__SmtpHost=smtp.gmail.com
 Mail__SmtpPort=587
@@ -139,6 +150,22 @@ Content-Type: application/json
   "body": "<h1>Hello World</h1>",
   "isHtml": true
 }
+```
+
+### Media Service
+```http
+# Upload file
+POST /api/media/upload?folder=images&generateThumbnail=true
+Content-Type: multipart/form-data
+
+# Get file
+GET /api/media/{fileName}
+
+# Delete file
+DELETE /api/media/{fileName}
+
+# List files
+GET /api/media/list?folder=images
 ```
 
 ### Client Management

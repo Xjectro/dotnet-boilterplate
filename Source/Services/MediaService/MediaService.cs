@@ -2,21 +2,28 @@ using Minio;
 using Minio.DataModel.Args;
 using Microsoft.Extensions.Options;
 using Source.Configurations;
+using Source.Models;
+using Source.Repositories.MediaRepository;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 
-namespace Source.Services.CdnService;
+namespace Source.Services.MediaService;
 
-public class CdnService : ICdnService
+public class MediaService : IMediaService
 {
-    private readonly CdnSettings _settings;
+    private readonly MediaSettings _settings;
     private readonly IMinioClient _minioClient;
-    private readonly ILogger<CdnService> _logger;
+    private readonly IMediaRepository _mediaRepository;
+    private readonly ILogger<MediaService> _logger;
 
-    public CdnService(IOptions<CdnSettings> options, ILogger<CdnService> logger)
+    public MediaService(
+        IOptions<MediaSettings> options, 
+        IMediaRepository mediaRepository,
+        ILogger<MediaService> logger)
     {
         _settings = options.Value;
+        _mediaRepository = mediaRepository;
         _logger = logger;
 
         _minioClient = new MinioClient()
@@ -68,7 +75,7 @@ public class CdnService : ICdnService
         }
     }
 
-    public async Task<string> UploadFileAsync(IFormFile file, string? folder = null, bool generateThumbnail = false)
+    public async Task<(Guid Id, string FileName)> UploadFileAsync(IFormFile file, string? folder = null, bool generateThumbnail = false)
     {
         if (!ValidateFile(file, out string errorMessage))
         {
@@ -77,9 +84,15 @@ public class CdnService : ICdnService
 
         try
         {
+            var mediaId = Guid.NewGuid();
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+            var uniqueFileName = $"{mediaId}{extension}";
             var objectName = folder != null ? $"{folder}/{uniqueFileName}" : uniqueFileName;
+
+            int? width = null;
+            int? height = null;
+            string? thumbnailUrl = null;
+            long fileSize = file.Length;
 
             using var stream = file.OpenReadStream();
             
@@ -87,6 +100,8 @@ public class CdnService : ICdnService
             if (IsImageFile(extension))
             {
                 using var image = await Image.LoadAsync(stream);
+                width = image.Width;
+                height = image.Height;
                 
                 // Resize if too large
                 if (image.Width > _settings.MaxImageWidth || image.Height > _settings.MaxImageHeight)
@@ -96,11 +111,14 @@ public class CdnService : ICdnService
                         Size = new Size(_settings.MaxImageWidth, _settings.MaxImageHeight),
                         Mode = ResizeMode.Max
                     }));
+                    width = image.Width;
+                    height = image.Height;
                 }
 
                 using var optimizedStream = new MemoryStream();
                 await image.SaveAsJpegAsync(optimizedStream, new JpegEncoder { Quality = _settings.JpegQuality });
                 optimizedStream.Position = 0;
+                fileSize = optimizedStream.Length;
 
                 await _minioClient.PutObjectAsync(
                     new PutObjectArgs()
@@ -113,7 +131,8 @@ public class CdnService : ICdnService
                 // Generate thumbnail if requested
                 if (generateThumbnail)
                 {
-                    await GenerateThumbnailAsync(image, objectName);
+                    var thumbPath = await GenerateThumbnailAsync(image, objectName);
+                    thumbnailUrl = GetFileUrl(thumbPath);
                 }
             }
             else
@@ -129,8 +148,28 @@ public class CdnService : ICdnService
                         .WithContentType(file.ContentType));
             }
 
-            _logger.LogInformation("File uploaded: {ObjectName}", objectName);
-            return objectName;
+            // Save to database
+            var mediaModel = new MediaModel
+            {
+                Id = mediaId,
+                FileName = objectName,
+                OriginalName = file.FileName,
+                ContentType = file.ContentType,
+                FileSize = fileSize,
+                Folder = folder,
+                Url = GetFileUrl(objectName),
+                ThumbnailUrl = thumbnailUrl,
+                FileExtension = extension,
+                IsImage = IsImageFile(extension),
+                Width = width,
+                Height = height,
+                UploadedAt = DateTimeOffset.UtcNow
+            };
+
+            await _mediaRepository.InsertAsync(mediaModel);
+
+            _logger.LogInformation("File uploaded: {ObjectName} with ID: {Id}", objectName, mediaId);
+            return (mediaId, objectName);
         }
         catch (Exception ex)
         {
@@ -191,58 +230,89 @@ public class CdnService : ICdnService
         }
     }
 
-    public async Task<bool> DeleteFileAsync(string fileName)
+    public async Task<MediaModel?> GetFileByIdAsync(Guid id)
     {
         try
         {
+            var media = await _mediaRepository.GetByIdAsync(id);
+            if (media == null)
+            {
+                _logger.LogWarning("Media not found with ID: {Id}", id);
+                return null;
+            }
+
+            return media;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting file by ID: {Id}", id);
+            return null;
+        }
+    }
+
+    public async Task<bool> DeleteFileAsync(Guid id)
+    {
+        try
+        {
+            var media = await _mediaRepository.GetByIdAsync(id);
+            if (media == null)
+            {
+                _logger.LogWarning("Media not found for deletion: {Id}", id);
+                return false;
+            }
+
+            // Delete from MinIO
             await _minioClient.RemoveObjectAsync(
                 new RemoveObjectArgs()
                     .WithBucket(_settings.BucketName)
-                    .WithObject(fileName));
+                    .WithObject(media.FileName));
 
-            _logger.LogInformation("File deleted: {FileName}", fileName);
+            _logger.LogInformation("File deleted from MinIO: {FileName}", media.FileName);
             
-            // Also delete thumbnail if exists
-            var thumbnailName = GetThumbnailPath(fileName);
-            try
+            // Delete thumbnail if exists
+            if (!string.IsNullOrEmpty(media.ThumbnailUrl))
             {
-                await _minioClient.RemoveObjectAsync(
-                    new RemoveObjectArgs()
-                        .WithBucket(_settings.BucketName)
-                        .WithObject(thumbnailName));
+                var thumbnailName = GetThumbnailPath(media.FileName);
+                try
+                {
+                    await _minioClient.RemoveObjectAsync(
+                        new RemoveObjectArgs()
+                            .WithBucket(_settings.BucketName)
+                            .WithObject(thumbnailName));
+                }
+                catch
+                {
+                    // Ignore if thumbnail doesn't exist
+                }
             }
-            catch
-            {
-                // Ignore if thumbnail doesn't exist
-            }
+
+            // Delete from database
+            await _mediaRepository.DeleteAsync(id);
+            _logger.LogInformation("Media deleted: {Id}", id);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting file: {FileName}", fileName);
+            _logger.LogError(ex, "Error deleting media: {Id}", id);
             return false;
         }
     }
 
-    public async Task<List<string>> ListFilesAsync(string? folder = null)
+    public async Task<List<MediaModel>> ListFilesAsync(string? folder = null)
     {
         try
         {
-            var files = new List<string>();
-            var prefix = folder != null ? $"{folder}/" : string.Empty;
-
-            var args = new ListObjectsArgs()
-                .WithBucket(_settings.BucketName)
-                .WithPrefix(prefix)
-                .WithRecursive(true);
-
-            await foreach (var item in _minioClient.ListObjectsEnumAsync(args))
+            if (folder != null)
             {
-                files.Add(item.Key);
+                var folderFiles = await _mediaRepository.GetByFolderAsync(folder);
+                return folderFiles.ToList();
             }
-
-            return files;
+            else
+            {
+                var allFiles = await _mediaRepository.GetAllAsync();
+                return allFiles.ToList();
+            }
         }
         catch (Exception ex)
         {
@@ -251,11 +321,18 @@ public class CdnService : ICdnService
         }
     }
 
-    public async Task<string?> ResizeImageAsync(string fileName, int width, int height, string? outputFolder = null)
+    public async Task<string?> ResizeImageAsync(Guid id, int width, int height, string? outputFolder = null)
     {
         try
         {
-            var fileData = await GetFileAsync(fileName);
+            var media = await _mediaRepository.GetByIdAsync(id);
+            if (media == null)
+            {
+                _logger.LogWarning("Media not found with ID: {Id}", id);
+                return null;
+            }
+
+            var fileData = await GetFileAsync(media.FileName);
             if (fileData == null) return null;
 
             using var inputStream = new MemoryStream(fileData.Value.FileData);
@@ -263,7 +340,7 @@ public class CdnService : ICdnService
 
             image.Mutate(x => x.Resize(width, height));
 
-            var extension = Path.GetExtension(fileName);
+            var extension = Path.GetExtension(media.FileName);
             var uniqueFileName = $"{Guid.NewGuid()}_resized{extension}";
             var objectName = outputFolder != null ? $"{outputFolder}/{uniqueFileName}" : uniqueFileName;
 
@@ -320,7 +397,7 @@ public class CdnService : ICdnService
         return true;
     }
 
-    private async Task GenerateThumbnailAsync(Image image, string originalFileName)
+    private async Task<string> GenerateThumbnailAsync(Image image, string originalFileName)
     {
         try
         {
@@ -345,10 +422,12 @@ public class CdnService : ICdnService
                     .WithContentType("image/jpeg"));
 
             _logger.LogInformation("Thumbnail generated: {ThumbnailName}", thumbnailName);
+            return thumbnailName;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating thumbnail");
+            throw;
         }
     }
 

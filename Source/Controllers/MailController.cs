@@ -6,7 +6,7 @@ using Source.Services.MailService;
 namespace Source.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("mail")]
 public class MailController : ControllerBase
 {
     private readonly IMailService _mailService;
@@ -22,21 +22,13 @@ public class MailController : ControllerBase
     [EnableRateLimiting("strict")]
     public async Task<IActionResult> SendMail([FromBody] SendMailRequest request)
     {
-        try
-        {
-            await _mailService.QueueEmailAsync(
-                request.To,
-                request.Subject,
-                request.Body,
-                request.IsHtml
-            );
+        await _mailService.QueueEmailAsync(
+            request.To,
+            request.Subject,
+            request.Body,
+            request.IsHtml
+        );
 
-            return Ok(new { message = "Email successfully queued", success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while queueing email");
-            return StatusCode(500, new { message = "Error occurred while queueing email", success = false });
-        }
+        return Ok(new { message = "Email successfully queued", success = true });
     }
 }

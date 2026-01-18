@@ -30,9 +30,9 @@ public static class ServiceExtensions
         services.Configure<Source.Configurations.MailSettings>(configuration.GetSection("Mail"));
         services.AddScoped<Source.Services.MailService.IMailService, Source.Services.MailService.MailService>();
         
-        // CDN Service
-        services.Configure<Source.Configurations.CdnSettings>(configuration.GetSection("Cdn"));
-        services.AddScoped<Source.Services.CdnService.ICdnService, Source.Services.CdnService.CdnService>();
+        // Media Service
+        services.Configure<Source.Configurations.MediaSettings>(configuration.GetSection("Media"));
+        services.AddScoped<Source.Services.MediaService.IMediaService, Source.Services.MediaService.MediaService>();
         
         // Workers
         services.AddScoped<Source.Services.WorkerService.IWorkerService, Source.Services.MailService.MailService>();
@@ -40,6 +40,7 @@ public static class ServiceExtensions
 
         // Repositories
         services.AddScoped<Source.Repositories.ClientRepository.IClientRepository, Source.Repositories.ClientRepository.ClientRepository>();
+        services.AddScoped<Source.Repositories.MediaRepository.IMediaRepository, Source.Repositories.MediaRepository.MediaRepository>();
 
         // Rate Limiting
         services.Configure<Source.Configurations.RateLimitSettings>(configuration.GetSection("RateLimit"));
@@ -132,5 +133,29 @@ public static class ServiceExtensions
         using var scope = app.Services.CreateScope();
         var cassandraService = scope.ServiceProvider.GetRequiredService<Source.Services.CassandraService.ICassandraService>();
         await cassandraService.InitializeKeyspaceAsync();
+    }
+
+    public static async Task InitializeMediaAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var mediaService = scope.ServiceProvider.GetRequiredService<Source.Services.MediaService.IMediaService>();
+        await mediaService.InitializeBucketAsync();
+    }
+
+    // Error Handling
+    public static void UseNotFoundHandler(this WebApplication app)
+    {
+        app.MapFallback(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                statusCode = 404,
+                message = "Endpoint not found",
+                path = context.Request.Path.Value,
+                method = context.Request.Method
+            });
+        });
     }
 }

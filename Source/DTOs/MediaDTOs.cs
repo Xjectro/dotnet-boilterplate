@@ -4,6 +4,7 @@ namespace Source.DTOs;
 public class UploadResponseDto
 {
     public bool Success { get; set; }
+    public Guid? Id { get; set; }
     public string? FileName { get; set; }
     public string? Url { get; set; }
     public string? ThumbnailUrl { get; set; }
@@ -22,11 +23,17 @@ public class MultipleUploadResponseDto
 // File Info DTO
 public class FileInfoDto
 {
+    public Guid Id { get; set; }
     public string FileName { get; set; } = string.Empty;
+    public string OriginalName { get; set; } = string.Empty;
     public string Url { get; set; } = string.Empty;
     public long Size { get; set; }
-    public DateTime? LastModified { get; set; }
+    public DateTimeOffset? UploadedAt { get; set; }
     public string ContentType { get; set; } = string.Empty;
+    public string? ThumbnailUrl { get; set; }
+    public bool IsImage { get; set; }
+    public int? Width { get; set; }
+    public int? Height { get; set; }
 }
 
 // Delete Response DTO
@@ -47,7 +54,7 @@ public class ListFilesResponseDto
 // Resize Image Request DTO
 public class ResizeImageRequestDto
 {
-    public string FileName { get; set; } = string.Empty;
+    public Guid Id { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
     public string? OutputFolder { get; set; }
