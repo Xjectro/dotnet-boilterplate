@@ -30,6 +30,10 @@ public static class ServiceExtensions
         services.Configure<Source.Configurations.MailSettings>(configuration.GetSection("Mail"));
         services.AddScoped<Source.Services.MailService.IMailService, Source.Services.MailService.MailService>();
         
+        // CDN Service
+        services.Configure<Source.Configurations.CdnSettings>(configuration.GetSection("Cdn"));
+        services.AddScoped<Source.Services.CdnService.ICdnService, Source.Services.CdnService.CdnService>();
+        
         // Workers
         services.AddScoped<Source.Services.WorkerService.IWorkerService, Source.Services.MailService.MailService>();
         services.AddHostedService<Source.Services.WorkerService.WorkerService>();

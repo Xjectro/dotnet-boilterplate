@@ -45,6 +45,23 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   api:
     build:
       context: ..
@@ -69,6 +86,14 @@ services:
       RabbitMq__Username: "admin"
       RabbitMq__Password: "admin123"
       RabbitMq__VirtualHost: "/"
+      Cdn__Endpoint: "http://minio:9000"
+      Cdn__AccessKey: "minioadmin"
+      Cdn__SecretKey: "minioadmin123"
+      Cdn__BucketName: "uploads"
+      Cdn__Region: "us-east-1"
+      Cdn__UseSSL: "false"
+      Cdn__PublicUrl: "http://localhost:9000"
+      Cdn__MaxFileSize: "10485760"
       Mail__SmtpHost: "smtp.gmail.com"
       Mail__SmtpPort: "587"
       Mail__SmtpUsername: "your-email@gmail.com"
@@ -87,6 +112,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5143/health || exit 1"]
       interval: 30s
@@ -97,3 +124,4 @@ volumes:
   cassandra_data:
   redis_data:
   rabbitmq_data:
+  minio_data:

@@ -19,6 +19,13 @@ var app = builder.Build();
 
 await app.InitializeCassandraAsync();
 
+// Initialize CDN bucket
+using (var scope = app.Services.CreateScope())
+{
+    var cdnService = scope.ServiceProvider.GetRequiredService<Source.Services.CdnService.ICdnService>();
+    await cdnService.InitializeBucketAsync();
+}
+
 app.UseSwaggerDocumentation();
 app.UseRouting();
 app.UseRateLimiter();
