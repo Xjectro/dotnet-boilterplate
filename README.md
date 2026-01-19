@@ -34,7 +34,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
                          │
                     ┌────┴──────┐
                     │           │
-              ┌─────▼────┐ ┌───▼──────┐
+              ┌─────▼────┐ ┌────▼─────┐
               │  Redis   │ │ RabbitMQ │
               │  Cache   │ │  Queue   │
               └──────────┘ └────┬─────┘
