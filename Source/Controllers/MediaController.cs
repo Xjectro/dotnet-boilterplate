@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Source.Services.MediaService;
 using Source.DTOs;
+using Serilog;
 
 namespace Source.Controllers;
 
@@ -9,12 +10,10 @@ namespace Source.Controllers;
 public class MediaController : ControllerBase
 {
     private readonly IMediaService _mediaService;
-    private readonly ILogger<MediaController> _logger;
 
-    public MediaController(IMediaService mediaService, ILogger<MediaController> logger)
+    public MediaController(IMediaService mediaService)
     {
         _mediaService = mediaService;
-        _logger = logger;
     }
 
     [HttpPost("upload")]
@@ -104,7 +103,7 @@ public class MediaController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error uploading file {FileName}", file.FileName);
+                Log.Error(ex, "Error uploading file {FileName}", file.FileName);
                 response.Results.Add(new UploadResponseDto
                 {
                     Success = false,

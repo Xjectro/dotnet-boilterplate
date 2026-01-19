@@ -7,6 +7,7 @@ using Source.Repositories.MediaRepository;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using Serilog;
 
 namespace Source.Services.MediaService;
 
@@ -15,16 +16,13 @@ public class MediaService : IMediaService
     private readonly MediaSettings _settings;
     private readonly IMinioClient _minioClient;
     private readonly IMediaRepository _mediaRepository;
-    private readonly ILogger<MediaService> _logger;
 
     public MediaService(
         IOptions<MediaSettings> options, 
-        IMediaRepository mediaRepository,
-        ILogger<MediaService> logger)
+        IMediaRepository mediaRepository)
     {
         _settings = options.Value;
         _mediaRepository = mediaRepository;
-        _logger = logger;
 
         _minioClient = new MinioClient()
             .WithEndpoint(_settings.Endpoint.Replace("http://", "").Replace("https://", ""))
@@ -45,7 +43,7 @@ public class MediaService : IMediaService
                 await _minioClient.MakeBucketAsync(
                     new MakeBucketArgs().WithBucket(_settings.BucketName));
                 
-                _logger.LogInformation("Bucket created: {BucketName}", _settings.BucketName);
+                Log.Information("Bucket created: {BucketName}", _settings.BucketName);
 
                 // Set public read policy
                 var policy = $$"""
@@ -70,7 +68,7 @@ public class MediaService : IMediaService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error initializing bucket");
+            Log.Error(ex, "Error initializing bucket");
             throw;
         }
     }
@@ -168,12 +166,12 @@ public class MediaService : IMediaService
 
             await _mediaRepository.InsertAsync(mediaModel);
 
-            _logger.LogInformation("File uploaded: {ObjectName} with ID: {Id}", objectName, mediaId);
+            Log.Information("File uploaded: {ObjectName} with ID: {Id}", objectName, mediaId);
             return (mediaId, objectName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file");
+            Log.Error(ex, "Error uploading file");
             throw;
         }
     }
@@ -194,12 +192,12 @@ public class MediaService : IMediaService
                     .WithObjectSize(fileStream.Length)
                     .WithContentType(contentType));
 
-            _logger.LogInformation("File uploaded from stream: {ObjectName}", objectName);
+            Log.Information("File uploaded from stream: {ObjectName}", objectName);
             return objectName;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file from stream");
+            Log.Error(ex, "Error uploading file from stream");
             throw;
         }
     }
@@ -225,7 +223,7 @@ public class MediaService : IMediaService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "File not found: {FileName}", fileName);
+            Log.Warning(ex, "File not found: {FileName}", fileName);
             return null;
         }
     }
@@ -237,7 +235,7 @@ public class MediaService : IMediaService
             var media = await _mediaRepository.GetByIdAsync(id);
             if (media == null)
             {
-                _logger.LogWarning("Media not found with ID: {Id}", id);
+                Log.Warning("Media not found with ID: {Id}", id);
                 return null;
             }
 
@@ -245,7 +243,7 @@ public class MediaService : IMediaService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting file by ID: {Id}", id);
+            Log.Error(ex, "Error getting file by ID: {Id}", id);
             return null;
         }
     }
@@ -257,7 +255,7 @@ public class MediaService : IMediaService
             var media = await _mediaRepository.GetByIdAsync(id);
             if (media == null)
             {
-                _logger.LogWarning("Media not found for deletion: {Id}", id);
+                Log.Warning("Media not found for deletion: {Id}", id);
                 return false;
             }
 
@@ -267,7 +265,7 @@ public class MediaService : IMediaService
                     .WithBucket(_settings.BucketName)
                     .WithObject(media.FileName));
 
-            _logger.LogInformation("File deleted from MinIO: {FileName}", media.FileName);
+            Log.Information("File deleted from MinIO: {FileName}", media.FileName);
             
             // Delete thumbnail if exists
             if (!string.IsNullOrEmpty(media.ThumbnailUrl))
@@ -288,13 +286,13 @@ public class MediaService : IMediaService
 
             // Delete from database
             await _mediaRepository.DeleteAsync(id);
-            _logger.LogInformation("Media deleted: {Id}", id);
+            Log.Information("Media deleted: {Id}", id);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting media: {Id}", id);
+            Log.Error(ex, "Error deleting media: {Id}", id);
             return false;
         }
     }
@@ -316,7 +314,7 @@ public class MediaService : IMediaService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing files");
+            Log.Error(ex, "Error listing files");
             throw;
         }
     }
@@ -328,7 +326,7 @@ public class MediaService : IMediaService
             var media = await _mediaRepository.GetByIdAsync(id);
             if (media == null)
             {
-                _logger.LogWarning("Media not found with ID: {Id}", id);
+                Log.Warning("Media not found with ID: {Id}", id);
                 return null;
             }
 
@@ -356,12 +354,12 @@ public class MediaService : IMediaService
                     .WithObjectSize(outputStream.Length)
                     .WithContentType("image/jpeg"));
 
-            _logger.LogInformation("Image resized: {ObjectName}", objectName);
+            Log.Information("Image resized: {ObjectName}", objectName);
             return objectName;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error resizing image");
+            Log.Error(ex, "Error resizing image");
             return null;
         }
     }
@@ -421,12 +419,12 @@ public class MediaService : IMediaService
                     .WithObjectSize(thumbnailStream.Length)
                     .WithContentType("image/jpeg"));
 
-            _logger.LogInformation("Thumbnail generated: {ThumbnailName}", thumbnailName);
+            Log.Information("Thumbnail generated: {ThumbnailName}", thumbnailName);
             return thumbnailName;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating thumbnail");
+            Log.Error(ex, "Error generating thumbnail");
             throw;
         }
     }

@@ -10,12 +10,10 @@ namespace Source.Controllers;
 public class MailController : ControllerBase
 {
     private readonly IMailService _mailService;
-    private readonly ILogger<MailController> _logger;
 
-    public MailController(IMailService mailService, ILogger<MailController> logger)
+    public MailController(IMailService mailService)
     {
         _mailService = mailService;
-        _logger = logger;
     }
 
     [HttpPost("send")]

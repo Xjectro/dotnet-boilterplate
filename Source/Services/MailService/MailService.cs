@@ -5,6 +5,7 @@ using Source.Services.WorkerService;
 using System.Net;
 using System.Net.Mail;
 using System.Text.Json;
+using Serilog;
 
 namespace Source.Services.MailService;
 
@@ -12,16 +13,13 @@ public class MailService : IMailService, IWorkerService
 {
     private readonly IRabbitMqService _rabbitMqService;
     private readonly MailSettings _mailSettings;
-    private readonly ILogger<MailService> _logger;
 
     public MailService(
         IRabbitMqService rabbitMqService,
-        IOptions<MailSettings> mailSettings,
-        ILogger<MailService> logger)
+        IOptions<MailSettings> mailSettings)
     {
         _rabbitMqService = rabbitMqService;
         _mailSettings = mailSettings.Value;
-        _logger = logger;
         InitializeQueue();
     }
 
@@ -32,11 +30,11 @@ public class MailService : IMailService, IWorkerService
         try
         {
             _rabbitMqService.DeclareQueue(_mailSettings.MailQueueName, durable: true, exclusive: false, autoDelete: false);
-            _logger.LogInformation("Mail queue '{QueueName}' initialized successfully.", _mailSettings.MailQueueName);
+            Log.Information("Mail queue '{QueueName}' initialized successfully.", _mailSettings.MailQueueName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to initialize mail queue '{QueueName}'.", _mailSettings.MailQueueName);
+            Log.Error(ex, "Failed to initialize mail queue '{QueueName}'.", _mailSettings.MailQueueName);
         }
     }
 
@@ -68,7 +66,7 @@ public class MailService : IMailService, IWorkerService
             var messageJson = JsonSerializer.Serialize(emailMessage);
             _rabbitMqService.PublishMessage(_mailSettings.MailQueueName, messageJson);
             
-            _logger.LogInformation(
+            Log.Information(
                 "Email queued successfully. To: {Recipients}, Subject: {Subject}",
                 string.Join(", ", emailMessage.To),
                 emailMessage.Subject);
@@ -77,7 +75,7 @@ public class MailService : IMailService, IWorkerService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to queue email. Subject: {Subject}", emailMessage.Subject);
+            Log.Error(ex, "Failed to queue email. Subject: {Subject}", emailMessage.Subject);
             throw;
         }
     }
@@ -87,12 +85,12 @@ public class MailService : IMailService, IWorkerService
         var emailMessage = JsonSerializer.Deserialize<EmailMessage>(message);
         if (emailMessage == null)
         {
-            _logger.LogWarning("Failed to deserialize email message");
+            Log.Warning("Failed to deserialize email message");
             return;
         }
 
         await SendEmailAsync(emailMessage, cancellationToken);
-        _logger.LogInformation("Email sent successfully to: {Recipients}", string.Join(", ", emailMessage.To));
+        Log.Information("Email sent successfully to: {Recipients}", string.Join(", ", emailMessage.To));
     }
 
     private async Task SendEmailAsync(EmailMessage emailMessage, CancellationToken cancellationToken)
