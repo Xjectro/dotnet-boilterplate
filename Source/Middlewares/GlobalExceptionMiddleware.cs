@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Serilog;
 
 namespace Source.Middlewares;
 
@@ -22,7 +23,7 @@ public class GlobalExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
+            Log.Error(ex, "An unhandled exception occurred: {Message}", ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
