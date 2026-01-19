@@ -13,6 +13,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
 - ✅ **Mail Service** with queue-based async sending
 - ✅ **Media Service** with MinIO object storage and ImageSharp optimization
 - ✅ **Worker Service** for background job processing
+- ✅ **Logging** with Serilog and Seq dashboard
 - ✅ **Docker** containerization with Docker Compose
 - ✅ **Health Checks** for all services
 - ✅ **BCrypt** password hashing
@@ -40,7 +41,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
                     │            │
               ┌─────▼────┐ ┌────▼──────┐
               │  MinIO   │ │  Worker   │
-              │   Media    │ │  Service  │
+              │   Media    │  Service  │
               └──────────┘ └───────────┘
 ```
 
@@ -76,6 +77,7 @@ dotnet run
 make run
 ```
 
+
 ## 📚 Documentation
 
 Comprehensive documentation is available in the [Documentation](Documentation/) folder:
@@ -88,6 +90,8 @@ Comprehensive documentation is available in the [Documentation](Documentation/) 
 - **[Redis Cache](Documentation/redis.md)** - Caching strategies and usage
 - **[JWT Authentication](Documentation/jwt.md)** - Security and authentication
 - **[Rate Limiting](Documentation/rate-limiting.md)** - API throttling and DDoS protection
+- **[Logging (Serilog + Seq)](Documentation/logging.md)** - Structured logging and monitoring
+- **Validation (FluentValidation)** - Model and request validation
 - **[Docker Setup](Documentation/docker.md)** - Container orchestration
 
 ## 🛠️ Configuration

@@ -1,7 +1,7 @@
 # Mail Service Documentation
 
 ## Overview
-The Mail Service provides email sending functionality with RabbitMQ queue integration for asynchronous processing.
+The Mail Service provides asynchronous email sending with RabbitMQ integration.
 
 ## Architecture
 
@@ -50,11 +50,11 @@ Mail__MailQueueName=mail_queue
 ## Service Implementation
 
 ### MailService.cs
-Located at: `Source/Services/MailService/MailService.cs`
+Location: `Source/Services/MailService/MailService.cs`
 
 **Implements Two Interfaces:**
-- `IMailService` - For queueing emails
-- `IWorkerService` - For processing queued emails
+- `IMailService` - Queues emails
+- `IWorkerService` - Processes queued emails
 
 ### Interface Methods
 

@@ -25,41 +25,68 @@ This project uses Docker for containerization and Docker Compose for orchestrati
 │              └─────────────┘                    │
 └─────────────────────────────────────────────────┘
 ```
+# Docker Setup
+
+## Overview
+This project uses Docker and Docker Compose to orchestrate multiple services. All services run in isolated containers and are easy to manage.
+
+## Container Architecture
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                   Docker Host                             │
+│                                                           │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                 │
+│  │   API    │  │  Redis   │  │ Cassandra│                │
+│  │ (.NET 10)│  │  Cache   │  │ Database │                │
+│  │ Port 5143│  │ Port 6379│  │ Port 9042│                │
+│  └─────┬────┘  └────┬─────┘  └────┬─────┘                 │
+│        │            │             │                        │
+│        └────────────┴─────────────┴─────────────┐          │
+│                     │                           │          │
+│              ┌──────┴──────┐                    │          │
+│              │  RabbitMQ   │                    │          │
+│              │   Queue     │                    │          │
+│              │ Port 5672   │                    │          │
+│              │ Mgmt 15672  │                    │          │
+│              └─────────────┘                    │          │
+└────────────────────────────────────────────────────────────┘
+```
 
 ## Makefile Commands
 
-The project includes a Makefile for simplified Docker operations:
+The Makefile in the project root simplifies Docker operations:
 
 ```makefile
 # Start development environment
 make dev
-# Equivalent to: docker compose -f Docker/docker-compose.dev.yml up --build
+# Equivalent: docker compose -f Docker/docker-compose.dev.yml up --build
 
 # Start production environment
 make prod
-# Equivalent to: docker compose -f Docker/docker-compose.prod.yml up -d --build
+# Equivalent: docker compose -f Docker/docker-compose.prod.yml up -d --build
 ```
 
 **Benefits:**
-- Shorter commands
-- Consistent across environments
+- Short and clear commands
+- Consistency across environments
 - No need to remember file paths
 - Automatic build on start
 
 ## Files
 
 ### docker-compose.dev.yml
-Development environment configuration with:
-- Hot reload support
+For development environment:
+- Hot reload
 - Debug settings
 - Development credentials
-- Local volume mounts
+- Local volume mount
 
 ### docker-compose.prod.yml
-Production environment configuration with:
+For production environment:
 - Optimized settings
 - Production credentials
-- Security hardening
+- Security improvements
 - Different replication strategies
 
 ### Dockerfile
@@ -87,7 +114,7 @@ api:
 
 **Features:**
 - Automatic restart
-- Health checks
+- Health check
 - Depends on infrastructure services
 - Environment-specific configuration
 
@@ -98,33 +125,6 @@ cassandra:
   ports:
     - "9042:9042"
   volumes:
-    - cassandra_data:/var/lib/cassandra
-```
-
-**Features:**
-- Data persistence
-- Health checks
-- Cluster configuration
-
-### 3. Redis
-```yaml
-redis:
-  image: redis:7.2
-  ports:
-    - "6379:6379"
-  command: ["redis-server", "--appendonly", "yes"]
-  volumes:
-    - redis_data:/data
-```
-
-**Features:**
-- AOF persistence
-- Data volume
-- Health checks
-
-### 4. RabbitMQ
-```yaml
-rabbitmq:
   image: rabbitmq:3.13-management
   ports:
     - "5672:5672"   # AMQP

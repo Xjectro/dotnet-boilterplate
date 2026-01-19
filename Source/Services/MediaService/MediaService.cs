@@ -3,7 +3,7 @@ using Minio.DataModel.Args;
 using Microsoft.Extensions.Options;
 using Source.Configurations;
 using Source.Models;
-using Source.Repositories.MediaRepository;
+using Source.Features.Media.Repositories;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;

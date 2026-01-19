@@ -1,20 +1,20 @@
 # RabbitMQ Message Queue Usage
 
 ## Overview
-RabbitMQ is used for asynchronous task processing and message queueing, primarily for email sending operations.
+RabbitMQ is used for asynchronous task processing and message queuing. It is especially used for operations like email sending.
 
 ## Configuration
 
 ### appsettings.json
 ```json
 {
-  "RabbitMq": {
-    "Host": "rabbitmq",
-    "Port": 5672,
-    "Username": "admin",
-    "Password": "admin123",
-    "VirtualHost": "/"
-  }
+    "RabbitMq": {
+        "Host": "rabbitmq",
+        "Port": 5672,
+        "Username": "admin",
+        "Password": "admin123",
+        "VirtualHost": "/"
+    }
 }
 ```
 
@@ -30,7 +30,7 @@ RabbitMq__VirtualHost=/
 ## Service Implementation
 
 ### RabbitMqService.cs
-Located at: `Source/Services/RabbitMqService/RabbitMqService.cs`
+Location: `Source/Services/RabbitMqService/RabbitMqService.cs`
 
 **Key Features:**
 - Connection pooling and management
@@ -43,13 +43,13 @@ Located at: `Source/Services/RabbitMqService/RabbitMqService.cs`
 ```csharp
 public interface IRabbitMqService
 {
-    IConnection GetConnection();
-    IModel CreateChannel();
-    void PublishMessage(string queueName, string message);
-    void PublishMessage(string exchangeName, string routingKey, string message);
-    void DeclareQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false);
-    void DeclareExchange(string exchangeName, string type = ExchangeType.Direct, bool durable = true, bool autoDelete = false);
-    void BindQueue(string queueName, string exchangeName, string routingKey);
+        IConnection GetConnection();
+        IModel CreateChannel();
+        void PublishMessage(string queueName, string message);
+        void PublishMessage(string exchangeName, string routingKey, string message);
+        void DeclareQueue(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false);
+        void DeclareExchange(string exchangeName, string type = ExchangeType.Direct, bool durable = true, bool autoDelete = false);
+        void BindQueue(string queueName, string exchangeName, string routingKey);
 }
 ```
 
@@ -59,16 +59,14 @@ public interface IRabbitMqService
 ```csharp
 public class MailService
 {
-    private readonly IRabbitMqService _rabbitMqService;
-    
-    public async Task QueueEmailAsync(string to, string subject, string body)
-    {
-        var emailMessage = new EmailMessage { To = to, Subject = subject, Body = body };
-        var messageJson = JsonSerializer.Serialize(emailMessage);
-        
-        // Publish to queue
-        _rabbitMqService.PublishMessage("mail_queue", messageJson);
-    }
+        private readonly IRabbitMqService _rabbitMqService;
+        public async Task QueueEmailAsync(string to, string subject, string body)
+        {
+                var emailMessage = new EmailMessage { To = to, Subject = subject, Body = body };
+                var messageJson = JsonSerializer.Serialize(emailMessage);
+                // Publish to queue
+                _rabbitMqService.PublishMessage("mail_queue", messageJson);
+        }
 }
 ```
 
@@ -94,10 +92,10 @@ _rabbitMqService.PublishMessage("email_exchange", "email.send.notification", mes
 
 ### How It Works
 
-1. **WorkerService** starts on application launch
+1. WorkerService starts when the application launches
 2. Discovers all `IWorkerService` implementations
-3. Creates RabbitMQ consumers for each worker's queue
-4. Listens for messages continuously
+3. Creates a RabbitMQ consumer for each worker's queue
+4. Continuously listens for messages
 5. Processes messages and acknowledges/rejects them
 
 ### Worker Service Flow

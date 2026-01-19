@@ -1,24 +1,24 @@
 # Rate Limiting
 
-This document explains the rate limiting implementation in the API using .NET's built-in rate limiting middleware.
+This document explains the request limiting implementation in the API using .NET's built-in rate limiting middleware.
 
 ## Overview
 
-The API uses .NET 7+ built-in rate limiting to protect endpoints from abuse and DDoS attacks. Multiple rate limiting strategies are configured with different policies for different use cases.
+The API uses .NET 7+ rate limiting to prevent abuse and DDoS attacks. Different strategies and policies support various use cases.
 
 ## Configuration
 
 ### Rate Limit Settings
 
-Configure rate limiting in `appsettings.json`:
+Configured via `appsettings.json`:
 
 ```json
 {
-  "RateLimit": {
-    "PermitLimit": 100,
-    "WindowSeconds": 60,
-    "QueueLimit": 0
-  }
+    "RateLimit": {
+        "PermitLimit": 100,
+        "WindowSeconds": 60,
+        "QueueLimit": 0
+    }
 }
 ```
 
@@ -26,20 +26,20 @@ Configure rate limiting in `appsettings.json`:
 
 ```yaml
 environment:
-  - RateLimit__PermitLimit=100
-  - RateLimit__WindowSeconds=60
-  - RateLimit__QueueLimit=0
+    - RateLimit__PermitLimit=100
+    - RateLimit__WindowSeconds=60
+    - RateLimit__QueueLimit=0
 ```
 
 ## Rate Limiting Policies
 
 ### 1. Global Policy (Default)
 
-**Strategy:** Fixed Window  
-**Limit:** 100 requests per minute per IP  
-**Queue:** 0 (immediate rejection)  
+- Strategy: Fixed Window
+- Limit: 100 requests per minute per IP
+- Queue: 0 (immediate reject)
 
-Applied to all endpoints by default unless overridden.
+Applied to all endpoints by default.
 
 ```csharp
 // Automatically applied to all endpoints
@@ -47,54 +47,54 @@ Applied to all endpoints by default unless overridden.
 
 ### 2. Strict Policy
 
-**Strategy:** Fixed Window  
-**Limit:** 10 requests per minute per IP  
-**Queue:** 0 (immediate rejection)  
+- Strategy: Fixed Window
+- Limit: 10 requests per minute per IP
+- Queue: 0 (immediate reject)
 
-Use for sensitive endpoints like authentication, mail sending, or password reset.
+Used for sensitive endpoints like authentication, mail sending, etc.
 
 ```csharp
 [EnableRateLimiting("strict")]
 [HttpPost("send")]
 public async Task<IActionResult> SendMail([FromBody] SendMailRequest request)
 {
-    // Only 10 requests per minute allowed
+        // Only 10 requests per minute allowed
 }
 ```
 
 ### 3. Token Bucket Policy
 
-**Strategy:** Token Bucket  
-**Token Limit:** 50 tokens  
-**Refill Rate:** 10 tokens per minute  
-**Queue:** 0 (immediate rejection)  
+- Strategy: Token Bucket
+- Token Limit: 50
+- Refill Rate: 10 tokens per minute
+- Queue: 0 (immediate reject)
 
-Allows burst traffic up to 50 requests, then throttles to 10 per minute. Good for APIs with variable load patterns.
+Allows up to 50 burst requests, then throttles to 10 per minute. Good for variable load APIs.
 
 ```csharp
 [EnableRateLimiting("token")]
 [HttpGet("search")]
 public async Task<IActionResult> Search([FromQuery] string query)
 {
-    // Supports bursts up to 50 requests
+        // Supports bursts up to 50 requests
 }
 ```
 
 ### 4. Sliding Window Policy
 
-**Strategy:** Sliding Window  
-**Limit:** 30 requests per minute per IP  
-**Segments:** 6 (10-second windows)  
-**Queue:** 0 (immediate rejection)  
+- Strategy: Sliding Window
+- Limit: 30 requests per minute per IP
+- Segments: 6 (10-second windows)
+- Queue: 0 (immediate reject)
 
-More accurate than fixed window, prevents burst attacks at window boundaries. Good for critical endpoints.
+More accurate than fixed window, prevents burst attacks. Good for critical endpoints.
 
 ```csharp
 [EnableRateLimiting("sliding")]
 [HttpPost("payment")]
 public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
 {
-    // Smoothly distributed 30 requests per minute
+        // Smoothly distributed 30 requests per minute
 }
 ```
 

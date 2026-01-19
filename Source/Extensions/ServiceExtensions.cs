@@ -1,4 +1,7 @@
 using System.Threading.RateLimiting;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Asp.Versioning;
 
 namespace Source.Extensions;
 
@@ -7,6 +10,28 @@ public static class ServiceExtensions
     // Service Registration
     public static IServiceCollection AddProjectServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // API Versioning
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = ApiVersionReader.Combine(
+                new UrlSegmentApiVersionReader(),
+                new HeaderApiVersionReader("X-Api-Version"),
+                new QueryStringApiVersionReader("api-version")
+            );
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = true;
+        });
+
+        // FluentValidation
+        services.AddFluentValidationAutoValidation();
+        services.AddFluentValidationClientsideAdapters();
+        services.AddValidatorsFromAssembly(typeof(Source.Features.Clients.Validators.ClientModelValidator).Assembly);
+
         // Bcrypt Service
         services.AddScoped<Source.Services.BCryptService.IBCryptService, Source.Services.BCryptService.BCryptService>();
 
@@ -39,8 +64,8 @@ public static class ServiceExtensions
         services.AddHostedService<Source.Services.WorkerService.WorkerService>();
 
         // Repositories
-        services.AddScoped<Source.Repositories.ClientRepository.IClientRepository, Source.Repositories.ClientRepository.ClientRepository>();
-        services.AddScoped<Source.Repositories.MediaRepository.IMediaRepository, Source.Repositories.MediaRepository.MediaRepository>();
+        services.AddScoped<Source.Features.Clients.Repositories.IClientRepository, Source.Features.Clients.Repositories.ClientRepository>();
+        services.AddScoped<Source.Features.Media.Repositories.IMediaRepository, Source.Features.Media.Repositories.MediaRepository>();
 
         // Rate Limiting
         services.Configure<Source.Configurations.RateLimitSettings>(configuration.GetSection("RateLimit"));
@@ -133,6 +158,13 @@ public static class ServiceExtensions
         using var scope = app.Services.CreateScope();
         var cassandraService = scope.ServiceProvider.GetRequiredService<Source.Services.CassandraService.ICassandraService>();
         await cassandraService.InitializeKeyspaceAsync();
+    }
+
+    public static async Task SeedCassandraDataAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var cassandraService = scope.ServiceProvider.GetRequiredService<Source.Services.CassandraService.ICassandraService>();
+        await cassandraService.SeedDataAsync();
     }
 
     public static async Task InitializeMediaAsync(this WebApplication app)

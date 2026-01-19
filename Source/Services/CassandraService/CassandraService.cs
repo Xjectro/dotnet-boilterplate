@@ -70,6 +70,36 @@ public class CassandraService : ICassandraService
         return new Table<T>(_session);
     }
 
+    public async Task SeedDataAsync()
+    {
+        var clientTable = GetTable<ClientModel>();
+        
+        // Check if data already exists
+        var existingClients = await clientTable.Take(1).ExecuteAsync();
+        if (existingClients.Any())
+        {
+            // Data already seeded, skip
+            return;
+        }
+
+        // Seed sample clients
+        var sampleClients = new[]
+        {
+            new ClientModel { Id = Guid.NewGuid(), Name = "Acme Corporation" },
+            new ClientModel { Id = Guid.NewGuid(), Name = "TechStart Inc" },
+            new ClientModel { Id = Guid.NewGuid(), Name = "Global Solutions Ltd" },
+            new ClientModel { Id = Guid.NewGuid(), Name = "Innovation Labs" },
+            new ClientModel { Id = Guid.NewGuid(), Name = "Digital Ventures" }
+        };
+
+        foreach (var client in sampleClients)
+        {
+            await clientTable.Insert(client).ExecuteAsync();
+        }
+
+        Console.WriteLine($"Seeded {sampleClients.Length} sample clients to Cassandra");
+    }
+
     public void Dispose()
     {
         _session.Dispose();

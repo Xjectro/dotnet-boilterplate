@@ -1,28 +1,28 @@
 # Media Service with MinIO
 
-A comprehensive Media Storage service built with MinIO object storage and ImageSharp for image optimization.
+A comprehensive media service powered by MinIO object storage and ImageSharp for image optimization.
 
 ## 🚀 Features
 
-- ✅ **File Upload/Download** - Single and multiple file uploads
-- ✅ **MinIO Storage** - S3-compatible object storage running in Docker
-- ✅ **Image Optimization** - Automatic resize and compression with ImageSharp
-- ✅ **Thumbnail Generation** - Auto-generate thumbnails for images
-- ✅ **Image Resizing** - On-demand image resizing
-- ✅ **File Validation** - Size and extension validation
-- ✅ **Folder Organization** - Organize files in folders
-- ✅ **Access Control** - JWT-based authentication ready
-- ✅ **Public URLs** - Direct access to uploaded files
+- ✅ File upload/download (single/multiple)
+- ✅ S3-compatible storage with MinIO (Docker)
+- ✅ Image optimization (ImageSharp)
+- ✅ Automatic thumbnail generation
+- ✅ On-demand image resizing
+- ✅ File size and extension validation
+- ✅ Folder-based organization
+- ✅ JWT-based access control
+- ✅ Direct public URLs for uploaded files
 
 ## 🏗️ Architecture
 
 ```
-┌─────────┐     ┌─────────┐     ┌─────────┐
-│ Client  │────▶│   API   │────▶│  MinIO  │
-└─────────┘     │         │     │ Docker  │
-                │ImageSharp     └─────────┘
+┌──────────┐     ┌──────────┐     ┌──────────┐
+│ Client  │──▶│   API   │──▶│  MinIO  │
+└──────────┘     │         │     │ Docker  │
+                │ImageSharp     └──────────┘
                 │Processing│
-                └─────────┘
+                └──────────┘
 ```
 
 ## ⚙️ Configuration
@@ -59,23 +59,23 @@ Media__MaxFileSize=10485760
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `Endpoint` | MinIO server endpoint | `http://localhost:9000` |
+| `Endpoint` | MinIO server address | `http://localhost:9000` |
 | `AccessKey` | MinIO access key | `minioadmin` |
 | `SecretKey` | MinIO secret key | `minioadmin123` |
 | `BucketName` | Default storage bucket | `uploads` |
-| `PublicUrl` | Public URL for file access | `http://localhost:9000` |
+| `PublicUrl` | Public file access URL | `http://localhost:9000` |
 | `MaxFileSize` | Maximum file size (bytes) | `10485760` (10MB) |
 | `ThumbnailWidth` | Thumbnail width | `200` |
 | `ThumbnailHeight` | Thumbnail height | `200` |
-| `MaxImageWidth` | Max image width | `1920` |
-| `MaxImageHeight` | Max image height | `1080` |
+| `MaxImageWidth` | Maximum image width | `1920` |
+| `MaxImageHeight` | Maximum image height | `1080` |
 | `JpegQuality` | JPEG compression quality | `85` |
 
 ## 📡 API Endpoints
 
 ### 1. Upload File
 
-Upload a single file to Media.
+Single file upload:
 
 ```http
 POST /api/media/upload?folder=images&generateThumbnail=true
@@ -85,7 +85,7 @@ file: [binary file]
 ```
 
 **Query Parameters:**
-- `folder` (optional): Folder to upload file into
+- `folder` (optional): Target folder for upload
 - `generateThumbnail` (optional): Generate thumbnail for images
 
 **Response:**

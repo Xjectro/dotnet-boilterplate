@@ -16,7 +16,10 @@ try
 
     builder.Configuration.AddConfiguration(configuration);
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers(options =>
+    {
+        options.Filters.Add<Source.Middlewares.ValidationFilter>();
+    });
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerDocumentation();
     builder.Services.AddProjectServices(builder.Configuration);
@@ -24,6 +27,7 @@ try
     var app = builder.Build();
 
     await app.InitializeCassandraAsync();
+    await app.SeedCassandraDataAsync();
     await app.InitializeMediaAsync();
 
     app.UseSerilogRequestLogging();

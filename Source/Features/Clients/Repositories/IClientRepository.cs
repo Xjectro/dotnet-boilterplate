@@ -1,6 +1,6 @@
 using Source.Models;
 
-namespace Source.Repositories.ClientRepository;
+namespace Source.Features.Clients.Repositories;
 
 public interface IClientRepository
 {

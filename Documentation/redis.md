@@ -22,7 +22,7 @@ Redis__Host=redis:6379
 ## Service Implementation
 
 ### RedisService.cs
-Located at: `Source/Services/RedisService/RedisService.cs`
+Location: `Source/Services/RedisService/RedisService.cs`
 
 **Key Features:**
 - Connection multiplexing
@@ -49,7 +49,6 @@ public interface IRedisService
 public class ClientController
 {
     private readonly IRedisService _redisService;
-    
     public ClientController(IRedisService redisService)
     {
         _redisService = redisService;

@@ -1,6 +1,6 @@
 using Source.Models;
 
-namespace Source.Repositories.MediaRepository;
+namespace Source.Features.Media.Repositories;
 
 public interface IMediaRepository
 {

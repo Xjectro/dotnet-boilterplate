@@ -1,14 +1,14 @@
 # JWT Authentication
 
 ## Overview
-JWT (JSON Web Token) authentication is used for secure, stateless user authentication.
+JWT (JSON Web Token) provides secure and stateless user authentication.
 
 ## Configuration
 
 ### appsettings.json
 ```json
 {
-  "JWT_SETTINGS": {
+  "JwtSettings": {
     "Secret": "your-secret-key-at-least-32-characters-long",
     "ExpiryMinutes": 60
   }
@@ -24,7 +24,7 @@ JwtSettings__ExpiryMinutes=60
 ## Service Implementation
 
 ### JwtService.cs
-Located at: `Source/Services/JwtService/JwtService.cs`
+Location: `Source/Services/JwtService/JwtService.cs`
 
 **Key Features:**
 - Token generation
@@ -49,11 +49,10 @@ public interface IJwtService
 [HttpPost("login")]
 public async Task<IActionResult> Login([FromBody] LoginRequest request)
 {
-    // Validate credentials
+    // Authenticate user
     var user = await ValidateUserAsync(request.Email, request.Password);
     if (user == null)
         return Unauthorized();
-    
     // Generate JWT token
     var token = _jwtService.GenerateToken(
         userId: user.Id.ToString(),
@@ -64,7 +63,6 @@ public async Task<IActionResult> Login([FromBody] LoginRequest request)
             { "name", user.Name }
         }
     );
-    
     return Ok(new { token, expiresIn = 3600 });
 }
 ```
@@ -75,7 +73,6 @@ public ClaimsPrincipal? ValidateRequest(string authHeader)
 {
     if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         return null;
-    
     var token = authHeader.Substring("Bearer ".Length);
     return _jwtService.ValidateToken(token);
 }
@@ -90,7 +87,6 @@ public IActionResult GetProfile()
     var userId = _jwtService.GetClaimValue(User, ClaimTypes.NameIdentifier);
     var email = _jwtService.GetClaimValue(User, ClaimTypes.Email);
     var role = _jwtService.GetClaimValue(User, "role");
-    
     return Ok(new { userId, email, role });
 }
 ```

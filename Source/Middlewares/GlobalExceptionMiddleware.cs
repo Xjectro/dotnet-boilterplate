@@ -57,14 +57,12 @@ public class GlobalExceptionMiddleware
                 break;
         }
 
-        var response = new
-        {
-            success = false,
-            statusCode = (int)statusCode,
-            message = message,
-            details = exception.Message,
-            timestamp = DateTime.UtcNow
-        };
+        var errorList = new List<string> { exception.Message };
+        var apiResponse = new Source.Common.ApiResponse<object>(
+            message: message,
+            errors: errorList,
+            success: false
+        );
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
@@ -74,6 +72,6 @@ public class GlobalExceptionMiddleware
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+        return context.Response.WriteAsync(JsonSerializer.Serialize(apiResponse, options));
     }
 }

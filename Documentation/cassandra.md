@@ -1,7 +1,7 @@
 # Cassandra Database Usage
 
 ## Overview
-This project uses Apache Cassandra as the primary NoSQL database for distributed data storage.
+This project uses Apache Cassandra as the main NoSQL database for distributed data storage.
 
 ## Configuration
 
@@ -15,7 +15,7 @@ This project uses Apache Cassandra as the primary NoSQL database for distributed
     "Keyspace": "default_keyspace",
     "Consistency": "LocalQuorum",
     "ReplicationClass": "SimpleStrategy",
-    "ReplicationFactor": "1"
+    "ReplicationFactor": 1
   }
 }
 ```
@@ -34,7 +34,7 @@ Cassandra__ReplicationFactor=1
 ## Service Implementation
 
 ### CassandraService.cs
-Located at: `Source/Services/CassandraService/CassandraService.cs`
+Location: `Source/Services/CassandraService/CassandraService.cs`
 
 **Key Features:**
 - Automatic session management
@@ -58,7 +58,6 @@ public interface ICassandraService
 public class ClientRepository
 {
     private readonly ICassandraService _cassandraService;
-    
     public ClientRepository(ICassandraService cassandraService)
     {
         _cassandraService = cassandraService;
@@ -66,7 +65,7 @@ public class ClientRepository
 }
 ```
 
-### 2. Execute Queries
+### 2. Execute Query
 ```csharp
 public async Task<Client> GetClientAsync(Guid id)
 {
@@ -74,13 +73,12 @@ public async Task<Client> GetClientAsync(Guid id)
     var statement = new SimpleStatement(
         "SELECT * FROM clients WHERE id = ?", id
     );
-    
     var result = await session.ExecuteAsync(statement);
     return result.FirstOrDefault();
 }
 ```
 
-### 3. Create Tables
+### 3. Create Table
 ```csharp
 public async Task CreateTableAsync()
 {

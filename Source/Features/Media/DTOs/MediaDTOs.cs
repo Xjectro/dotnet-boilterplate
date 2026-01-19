@@ -1,4 +1,6 @@
-namespace Source.DTOs;
+using System.ComponentModel.DataAnnotations;
+
+namespace Source.Features.Media.DTOs;
 
 // Upload Response DTO
 public class UploadResponseDto
@@ -47,24 +49,4 @@ public class DeleteResponseDto
 public class ListFilesResponseDto
 {
     public List<FileInfoDto> Files { get; set; } = new();
-    public int TotalCount { get; set; }
-    public string? Folder { get; set; }
-}
-
-// Resize Image Request DTO
-public class ResizeImageRequestDto
-{
-    public Guid Id { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public string? OutputFolder { get; set; }
-}
-
-// Resize Image Response DTO
-public class ResizeImageResponseDto
-{
-    public bool Success { get; set; }
-    public string? ResizedFileName { get; set; }
-    public string? Url { get; set; }
-    public string? Message { get; set; }
 }

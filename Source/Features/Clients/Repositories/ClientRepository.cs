@@ -2,7 +2,7 @@ using Source.Models;
 using Source.Services.CassandraService;
 using Cassandra.Data.Linq;
 
-namespace Source.Repositories.ClientRepository;
+namespace Source.Features.Clients.Repositories;
 
 public class ClientRepository : IClientRepository
 {
@@ -17,10 +17,7 @@ public class ClientRepository : IClientRepository
 
     public async Task<ClientModel?> GetByIdAsync(Guid id)
     {
-        return await _table
-            .Where(c => c.Id == id)
-            .FirstOrDefault()
-            .ExecuteAsync();
+        return await _table.FirstOrDefault(c => c.Id == id).ExecuteAsync();
     }
 
     public async Task<IEnumerable<ClientModel>> GetAllAsync()
@@ -35,14 +32,17 @@ public class ClientRepository : IClientRepository
 
     public async Task UpdateAsync(ClientModel client)
     {
-        await _table.Insert(client).ExecuteAsync();
+        await _table.Where(c => c.Id == client.Id)
+            .Select(c => new ClientModel {
+                Id = client.Id,
+                Name = client.Name
+            })
+            .Update()
+            .ExecuteAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        await _table
-            .Where(c => c.Id == id)
-            .Delete()
-            .ExecuteAsync();
+        await _table.Where(c => c.Id == id).Delete().ExecuteAsync();
     }
 }
