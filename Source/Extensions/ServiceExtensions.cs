@@ -54,11 +54,11 @@ public static class ServiceExtensions
         // Mail Service
         services.Configure<Source.Configurations.MailSettings>(configuration.GetSection("Mail"));
         services.AddScoped<Source.Services.MailService.IMailService, Source.Services.MailService.MailService>();
-        
+
         // Media Service
         services.Configure<Source.Configurations.MediaSettings>(configuration.GetSection("Media"));
         services.AddScoped<Source.Services.MediaService.IMediaService, Source.Services.MediaService.MediaService>();
-        
+
         // Workers
         services.AddScoped<Source.Services.WorkerService.IWorkerService, Source.Services.MailService.MailService>();
         services.AddHostedService<Source.Services.WorkerService.WorkerService>();
