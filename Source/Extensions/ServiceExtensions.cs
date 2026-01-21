@@ -36,7 +36,7 @@ public static class ServiceExtensions
         services.AddScoped<Source.Services.BCryptService.IBCryptService, Source.Services.BCryptService.BCryptService>();
 
         // JWT Service
-        services.Configure<Source.Configurations.JwtSettings>(configuration.GetSection("JWT_SETTINGS"));
+        services.Configure<Source.Configurations.JwtSettings>(configuration.GetSection("JwtSettings"));
         services.AddSingleton<Source.Services.JwtService.IJwtService, Source.Services.JwtService.JwtService>();
 
         // Redis Service
