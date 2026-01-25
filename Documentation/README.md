@@ -25,11 +25,9 @@ This .NET 10 based boilerplate project includes the following features:
 ```
 ├── Source/
 │   ├── Configurations/      # Configuration classes
-│   ├── Controllers/         # API controllers
 │   ├── DTOs/                # Data transfer objects
 │   ├── Extensions/          # Service extensions
 │   ├── Models/              # Database models
-│   ├── Repositories/        # Data access layer
 │   └── Services/            # Business logic services
 ├── Docker/                  # Docker compose files
 └── Documentation/           # Project documentation

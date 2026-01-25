@@ -1,15 +1,15 @@
 services:
-  cassandra:
-    image: cassandra:4.1
-    container_name: cassandra
+  scylla:
+    image: scylladb/scylla:5.4
+    container_name: scylla
     ports:
       - "9042:9042"
     environment:
-      CASSANDRA_CLUSTER_NAME: "local-cluster"
-      CASSANDRA_DC: "istanbul"
-      CASSANDRA_RACK: "rack1"
+      SCYLLA_CLUSTER_NAME: "local-cluster"
+      SCYLLA_DC: "istanbul"
+      SCYLLA_RACK: "rack1"
     volumes:
-      - cassandra_data:/var/lib/cassandra
+      - cassandra_data:/var/lib/scylla
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
       interval: 30s
@@ -85,7 +85,7 @@ services:
       JwtSettings__Secret: "a19b225eb281d6c5e09d0d329aa67fd1"
       JwtSettings__ExpiryMinutes: "60"
       Redis__Host: "redis:6379"
-      Cassandra__ContactPoints: "cassandra"
+      Cassandra__ContactPoints: "scylla"
       Cassandra__Port: "9042"
       Cassandra__Datacenter: "istanbul"
       Cassandra__Keyspace: "default_keyspace"
