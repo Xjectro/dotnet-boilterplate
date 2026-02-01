@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using Source.Services.MediaService;
 using Source.Features.Media.DTOs;
-using Serilog;
+using Source.Common;
 
 namespace Source.Features.Media.Controllers;
 
@@ -25,26 +25,27 @@ public class MediaController : ControllerBase
     /// Uploads a media file
     /// </summary>
     [HttpPost("upload")]
-    [ProducesResponseType(typeof(UploadResponseDto), 200)]
+    [ProducesResponseType(typeof(ApiResponse<UploadResponseDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<object>), 400)]
     public async Task<IActionResult> Upload([FromForm] UploadFileRequestDto request)
     {
         var file = request.File;
         var folder = request.Folder;
         if (file == null)
-            return BadRequest(new Source.Common.ApiResponse<object>(message: "File is required.", errors: new List<string>{"File is required."}, success: false));
+            return BadRequest(new ApiResponse<object>(message: "File is required.", errors: new List<string>{"File is required."}, success: false));
         if (!_mediaService.ValidateFile(file, out var error))
-            return BadRequest(new Source.Common.ApiResponse<object>(message: error, errors: new List<string>{error}, success: false));
+            return BadRequest(new ApiResponse<object>(message: error, errors: new List<string>{error}, success: false));
         var (id, fileName) = await _mediaService.UploadFileAsync(file, folder);
         var url = _mediaService.GetFileUrl(fileName);
         var responseDto = new UploadResponseDto { Success = true, Id = id, FileName = fileName, Url = url };
-        return Ok(new Source.Common.ApiResponse<UploadResponseDto>(responseDto, "File uploaded successfully."));
+        return Ok(new ApiResponse<UploadResponseDto>(responseDto, "File uploaded successfully."));
     }
 
     /// <summary>
     /// Lists media files
     /// </summary>
     [HttpGet("list")]
-    [ProducesResponseType(typeof(ListFilesResponseDto), 200)]
+    [ProducesResponseType(typeof(ApiResponse<ListFilesResponseDto>), 200)]
     public async Task<IActionResult> List([FromQuery] string? folder = null)
     {
         var files = await _mediaService.ListFilesAsync(folder);
@@ -62,20 +63,20 @@ public class MediaController : ControllerBase
             Height = f.Height
         }).ToList();
         var responseDto = new ListFilesResponseDto { Files = result };
-        return Ok(new Source.Common.ApiResponse<ListFilesResponseDto>(responseDto, "Files listed successfully."));
+        return Ok(new ApiResponse<ListFilesResponseDto>(responseDto, "Files listed successfully."));
     }
 
     /// <summary>
     /// Gets a media file by id
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(FileInfoDto), 200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ApiResponse<FileInfoDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<object>), 404)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var file = await _mediaService.GetFileByIdAsync(id);
         if (file == null)
-            return NotFound(new Source.Common.ApiResponse<object>(message: "File not found.", errors: new List<string>{"File not found."}, success: false));
+            return NotFound(new ApiResponse<object>(message: "File not found.", errors: new List<string>{"File not found."}, success: false));
         var dto = new FileInfoDto {
             Id = file.Id,
             FileName = file.FileName,
@@ -89,21 +90,21 @@ public class MediaController : ControllerBase
             Width = file.Width,
             Height = file.Height
         };
-        return Ok(new Source.Common.ApiResponse<FileInfoDto>(dto, "File fetched successfully."));
+        return Ok(new ApiResponse<FileInfoDto>(dto, "File fetched successfully."));
     }
 
     /// <summary>
     /// Deletes a media file by id
     /// </summary>
     [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(DeleteResponseDto), 200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ApiResponse<DeleteResponseDto>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<object>), 404)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _mediaService.DeleteFileAsync(id);
         if (!success)
-            return NotFound(new Source.Common.ApiResponse<object>(message: "File not found.", errors: new List<string>{"File not found."}, success: false));
+            return NotFound(new ApiResponse<object>(message: "File not found.", errors: new List<string>{"File not found."}, success: false));
         var responseDto = new DeleteResponseDto { Success = true, Message = "File deleted." };
-        return Ok(new Source.Common.ApiResponse<DeleteResponseDto>(responseDto, "File deleted successfully."));
+        return Ok(new ApiResponse<DeleteResponseDto>(responseDto, "File deleted successfully."));
     }
 }

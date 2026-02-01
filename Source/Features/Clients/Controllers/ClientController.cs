@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Asp.Versioning;
 using Source.Models;
 using Source.Features.Clients.Repositories;
+using Source.Common;
 
 namespace Source.Features.Clients.Controllers;
 
@@ -24,72 +25,73 @@ public class ClientController : ControllerBase
     /// Get all clients
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ClientModel>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<IEnumerable<ClientModel>>), 200)]
     public async Task<IActionResult> GetAll()
     {
         var clients = await _clientRepository.GetAllAsync();
-        return Ok(clients);
+        var response = new ApiResponse<IEnumerable<ClientModel>>(clients, "Clients listed successfully");
+        return Ok(response);
     }
 
     /// <summary>
     /// Get client by id
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ClientModel), 200)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ApiResponse<ClientModel>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 404)]
     public async Task<IActionResult> GetById(Guid id)
     {
         var client = await _clientRepository.GetByIdAsync(id);
         if (client == null)
-            return NotFound();
-        return Ok(client);
+            return NotFound(new ApiResponse<string>("Client not found", (List<string>?)null, false));
+        var response = new ApiResponse<ClientModel>(client, "Client found");
+        return Ok(response);
     }
 
     /// <summary>
     /// Create a new client
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(void), 201)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(typeof(ApiResponse<ClientModel>), 201)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 400)]
     public async Task<IActionResult> Create([FromBody] ClientModel client)
     {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
         await _clientRepository.InsertAsync(client);
-        return StatusCode(201);
+        var response = new ApiResponse<ClientModel>(client, "Client created successfully");
+        return StatusCode(201, response);
     }
 
     /// <summary>
     /// Update an existing client
     /// </summary>
     [HttpPut("{id}")]
-    [ProducesResponseType(typeof(void), 204)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ApiResponse<ClientModel>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 400)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 404)]
     public async Task<IActionResult> Update(Guid id, [FromBody] ClientModel client)
     {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
         var existing = await _clientRepository.GetByIdAsync(id);
         if (existing == null)
-            return NotFound();
+            return NotFound(new ApiResponse<string>("Client not found", (List<string>?)null, false));
         client.Id = id;
         await _clientRepository.UpdateAsync(client);
-        return NoContent();
+        var response = new ApiResponse<ClientModel>(client, "Client updated successfully");
+        return Ok(response);
     }
 
     /// <summary>
     /// Delete a client
     /// </summary>
     [HttpDelete("{id}")]
-    [ProducesResponseType(typeof(void), 204)]
-    [ProducesResponseType(404)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 404)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var existing = await _clientRepository.GetByIdAsync(id);
         if (existing == null)
-            return NotFound();
+            return NotFound(new ApiResponse<string>("Client not found", (List<string>?)null, false));
         await _clientRepository.DeleteAsync(id);
-        return NoContent();
+        var response = new ApiResponse<string>("Client deleted successfully");
+        return Ok(response);
     }
 }

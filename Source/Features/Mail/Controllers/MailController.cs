@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Asp.Versioning;
 using Source.Features.Mail.DTOs;
 using Source.Services.MailService;
+using Source.Common;
 
 namespace Source.Features.Mail.Controllers;
 
@@ -25,14 +26,11 @@ public class MailController : ControllerBase
     /// Sends an email by queueing it to RabbitMQ
     /// </summary>
     [HttpPost("send")]
-    [ProducesResponseType(typeof(void), 200)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), 400)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 400)]
     public async Task<IActionResult> SendMail([FromBody] SendMailRequest request)
     {
-        if (!ModelState.IsValid)
-            return ValidationProblem(ModelState);
-
         await _mailService.QueueEmailAsync(request.To, request.Subject, request.Body, request.IsHtml);
-        return Ok();
+        return Ok(new ApiResponse<string>("Mail queued successfully"));
     }
 }
