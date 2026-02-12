@@ -1,11 +1,11 @@
 # .NET Boilerplate
 
-A production-ready .NET 10 boilerplate with microservices architecture, featuring Cassandra, Redis, RabbitMQ, and comprehensive service implementations.
+A production-ready .NET 10 boilerplate with microservices architecture, featuring ScyllaDB (Cassandra-compatible), Redis, RabbitMQ, and comprehensive service implementations.
 
 ## 🚀 Features
 
 - ✅ **RESTful API** with Swagger/ReDoc documentation
-- ✅ **Apache Cassandra** for distributed NoSQL storage
+- ✅ **ScyllaDB (Cassandra-compatible)** for distributed NoSQL storage
 - ✅ **Redis** for high-performance caching
 - ✅ **RabbitMQ** for asynchronous message processing
 - ✅ **JWT Authentication** for secure API access
@@ -29,7 +29,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
 
 ```
 ┌─────────────┐     ┌──────────┐     ┌───────────┐
-│   Client    │────▶│   API    │────▶│ Cassandra │
+│   Client    │────▶│   API    │────▶│ ScyllaDB  │
 └─────────────┘     └────┬─────┘     └───────────┘
                          │
                     ┌────┴──────┐
@@ -41,7 +41,7 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
                     │           │
               ┌─────▼────┐ ┌────▼──────┐
               │  MinIO   │ │  Worker   │
-              │  Media   | │  Service  │
+              │  Media   │ │  Service  │
               └──────────┘ └───────────┘
 ```
 
@@ -50,14 +50,11 @@ A production-ready .NET 10 boilerplate with microservices architecture, featurin
 ### Using Docker (Recommended)
 
 ```bash
-# Clone the repository
 git clone https://github.com/Xjectro/dotnet-boilterplate.git
 cd dotnet-boilterplate
 
-# Start development environment
 make dev
 
-# Access the application
 # API: http://localhost:5143
 # Swagger: http://localhost:5143/swagger
 # MinIO Console: http://localhost:9001 (minioadmin/minioadmin123)
@@ -70,29 +67,26 @@ make dev
 # Restore dependencies
 dotnet restore
 
-# Run the application
-dotnet run
-
-# Or use the Makefile
-make run
+# Run the API locally
+dotnet run --project src/presentation/api/Api.csproj
 ```
 
 
 ## 📚 Documentation
 
-Comprehensive documentation is available in the [Documentation](Documentation/) folder:
+Comprehensive documentation is available in the [docs](docs/) folder:
 
-- **[System Overview](Documentation/README.md)** - Architecture and project structure
-- **[Cassandra Database](Documentation/cassandra.md)** - Database setup and usage
-- **[RabbitMQ Queue](Documentation/rabbitmq.md)** - Message queue implementation
-- **[Mail Service](Documentation/mail-service.md)** - Email service with async processing
-- **[Media Service](Documentation/media.md)** - File upload, storage and delivery with MinIO
-- **[Redis Cache](Documentation/redis.md)** - Caching strategies and usage
-- **[JWT Authentication](Documentation/jwt.md)** - Security and authentication
-- **[Rate Limiting](Documentation/rate-limiting.md)** - API throttling and DDoS protection
-- **[Logging (Serilog + Seq)](Documentation/logging.md)** - Structured logging and monitoring
+- **[System Overview](docs/README.md)** - Architecture and project structure
+- **[ScyllaDB (Cassandra-compatible)](docs/scylla.md)** - Database setup and usage
+- **[RabbitMQ Queue](docs/rabbitmq.md)** - Message queue implementation
+- **[Mail Service](docs/mail-service.md)** - Email service with async processing
+- **[Media Service](docs/media.md)** - File upload, storage and delivery with MinIO
+- **[Redis Cache](docs/redis.md)** - Caching strategies and usage
+- **[JWT Authentication](docs/jwt.md)** - Security and authentication
+- **[Rate Limiting](docs/rate-limiting.md)** - API throttling and DDoS protection
+- **[Logging (Serilog + Seq)](docs/logging.md)** - Structured logging and monitoring
 - **Validation (FluentValidation)** - Model and request validation
-- **[Docker Setup](Documentation/docker.md)** - Container orchestration
+- **[Docker Setup](docs/docker.md)** - Container orchestration
 
 ## 🛠️ Configuration
 
@@ -108,8 +102,8 @@ JwtSettings__ExpiryMinutes=60
 # Redis
 Redis__Host=redis:6379
 
-# Cassandra
-Cassandra__ContactPoints=cassandra
+# Scylla (Cassandra-compatible settings)
+Cassandra__ContactPoints=scylla
 Cassandra__Port=9042
 Cassandra__Keyspace=default_keyspace
 
@@ -127,21 +121,9 @@ Media__BucketName=uploads
 Media__PublicUrl=http://localhost:9000
 Media__MaxFileSize=10485760
 
-# Mail
-Mail__SmtpHost=smtp.gmail.com
-Mail__SmtpPort=587
-Mail__SmtpUsername=your-email@gmail.com
-Mail__SmtpPassword=your-app-password
 ```
-
-See `appsettings.Development.json` for all available options.
 
 ## 📡 API Endpoints
-
-### Health Check
-```http
-GET /health
-```
 
 ### Mail Service
 ```http
@@ -149,10 +131,10 @@ POST /api/mail/send
 Content-Type: application/json
 
 {
-  "to": ["user@example.com"],
-  "subject": "Welcome!",
-  "body": "<h1>Hello World</h1>",
-  "isHtml": true
+      "to": ["user@example.com"],
+      "subject": "Welcome!",
+      "body": "<h1>Hello World</h1>",
+      "isHtml": true
 }
 ```
 
@@ -185,25 +167,18 @@ Visit `/swagger` for complete API documentation.
 ## 🏗️ Project Structure
 
 ```
-├── Source/
-│   ├── Configurations/      # Configuration classes
-│   ├── Controllers/         # API controllers
-│   ├── DTOs/               # Data transfer objects
-│   ├── Extensions/         # Service extensions
-│   ├── Models/             # Database models
-│   ├── Repositories/       # Data access layer
-│   └── Services/           # Business logic
-│       ├── BCryptService/
-│       ├── CassandraService/
-│       ├── JwtService/
-│       ├── MailService/
-│       ├── RabbitMqService/
-│       ├── RedisService/
-│       └── WorkerService/
-├── Docker/                 # Docker compose files
-├── Documentation/          # Detailed documentation
-├── Api.csproj             # Project file
-├── Program.cs             # Application entry point
+├── src/
+│   ├── core/               # Domain entities and shared contracts
+│   ├── application/        # Use cases, validation, and interfaces
+│   ├── infrastructure/     # External adapters (DB, messaging, storage)
+│   └── presentation/
+│       └── api/            # ASP.NET Core API host and middleware
+├── deploy/
+│   └── docker/             # Dockerfiles and compose configurations
+├── docs/                   # Additional documentation (guides, ADRs)
+├── tests/                  # Unit and integration test projects
+├── ops/                    # CI/CD pipelines and operational scripts
+├── api.sln                 # Solution file
 └── README.md
 ```
 
@@ -237,18 +212,18 @@ make dev
 make prod
 
 # View logs
-docker compose -f Docker/docker-compose.dev.yml logs -f
+docker compose -f deploy/docker/dev/docker-compose.yml logs -f
 
 # Stop services
-docker compose -f Docker/docker-compose.dev.yml down
+docker compose -f deploy/docker/dev/docker-compose.yml down
 
 # Stop and remove volumes
-docker compose -f Docker/docker-compose.dev.yml down -v
+docker compose -f deploy/docker/dev/docker-compose.yml down -v
 ```
 
 ## 📊 Services
 
-### Cassandra
+### ScyllaDB
 - **Port**: 9042
 - **Keyspace**: default_keyspace
 - **Replication**: SimpleStrategy (Dev)
@@ -307,7 +282,7 @@ For questions or support, please open an issue on GitHub.
 
 - .NET Team for the amazing framework
 - Docker for containerization
-- Apache Cassandra for distributed database
+- ScyllaDB for distributed database
 - Redis for caching
 - RabbitMQ for message queuing
 

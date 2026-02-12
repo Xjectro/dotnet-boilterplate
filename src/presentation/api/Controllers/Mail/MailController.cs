@@ -1,0 +1,36 @@
+using Api.Application.Common;
+using Api.Application.Common.Interfaces;
+using Api.Application.Mail.DTOs;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace Api.Presentation.Api.Controllers.Mail;
+
+/// <summary>
+/// Email service endpoints
+/// </summary>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("v{version:apiVersion}/mail")]
+public class MailController : ControllerBase
+{
+    private readonly IMailService _mailService;
+
+    public MailController(IMailService mailService)
+    {
+        _mailService = mailService;
+    }
+
+    /// <summary>
+    /// Sends an email by queueing it to RabbitMQ
+    /// </summary>
+    [HttpPost("send")]
+    [ProducesResponseType(typeof(ApiResponse<string>), 200)]
+    [ProducesResponseType(typeof(ApiResponse<string>), 400)]
+    public async Task<IActionResult> SendMail([FromBody] SendMailRequest request)
+    {
+        await _mailService.QueueEmailAsync(request.To, request.Subject, request.Body, request.IsHtml);
+        return Ok(new ApiResponse<string>("Mail queued successfully"));
+    }
+}

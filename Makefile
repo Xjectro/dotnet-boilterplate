@@ -1,8 +1,11 @@
-DEV_COMPOSE := Docker/docker-compose.dev.yml
-PROD_COMPOSE := Docker/docker-compose.prod.yml
-
 dev:
-	docker compose -f $(DEV_COMPOSE) up --build
+	docker compose -f deploy/docker/dev/docker-compose.yml up --build
 
 prod:
-	docker compose -f $(PROD_COMPOSE) up -d --build
+	docker compose -f deploy/docker/prod/docker-compose.yml up -d --build
+
+test:
+	dotnet test
+
+format:
+	dotnet format
