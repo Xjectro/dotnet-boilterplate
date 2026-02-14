@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -9,6 +10,8 @@ public static class LoggingExtensions
 {
     public static void ConfigureSerilog(this WebApplicationBuilder builder)
     {
+        var seqUrl = builder.Configuration.GetValue<string>("Seq:Url") ?? "http://localhost:5341";
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -23,7 +26,7 @@ public static class LoggingExtensions
                 rollingInterval: RollingInterval.Day,
                 outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}",
                 retainedFileCountLimit: 30)
-            .WriteTo.Seq(Environment.GetEnvironmentVariable("SEQ_URL") ?? "http://localhost:5341")
+            .WriteTo.Seq(seqUrl)
             .CreateLogger();
 
         builder.Host.UseSerilog();
