@@ -1,7 +1,7 @@
 services:
   scylla:
     image: scylladb/scylla:latest
-    container_name: scylla
+    container_name: development-boilterplate-scylla
     ports:
       - "9042:9042"
     environment:
@@ -17,7 +17,7 @@ services:
       retries: 5
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: development-boilterplate-redis
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "yes"]
@@ -30,7 +30,7 @@ services:
       retries: 5
   rabbitmq:
     image: rabbitmq:latest
-    container_name: rabbitmq
+    container_name: development-boilterplate-rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -47,7 +47,7 @@ services:
       retries: 5
   minio:
     image: minio/minio:latest
-    container_name: minio
+    container_name: development-boilterplate-minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -64,7 +64,7 @@ services:
       retries: 5
   seq:
     image: datalust/seq:latest
-    container_name: seq
+    container_name: development-boilterplate-seq
     ports:
       - "5341:80"
     environment:
@@ -76,7 +76,7 @@ services:
     build:
       context: ../../..
       dockerfile: deploy/docker/api/Dockerfile
-    container_name: api-dev
+    container_name: development-boilterplate-api
     ports:
       - "5143:5143"
     environment:
